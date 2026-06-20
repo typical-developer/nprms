@@ -133,7 +133,13 @@ export function CasesTable({ rolePrefix = 'admin' }: { rolePrefix?: string }) {
                 <td className="py-3 px-4 max-w-xs truncate">{caseItem.title}</td>
                 <td className="py-3 px-4 text-xs">{caseItem.category}</td>
                 <td className="py-3 px-4 text-xs text-muted-foreground">{caseItem.location}</td>
-                <td className="py-3 px-4 text-xs">{caseItem.assigned_officer}</td>
+                <td className="py-3 px-4 text-xs">
+                  {typeof caseItem.assigned_officer === 'object' && caseItem.assigned_officer ? (
+                    (caseItem.assigned_officer as any).full_name
+                  ) : (
+                    caseItem.assigned_officer as string
+                  )}
+                </td>
                 <td className="py-3 px-4">
                   <Badge variant={getStatusVariant(caseItem.status)} className="text-xs">
                     {caseItem.status}

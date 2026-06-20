@@ -32,7 +32,7 @@ export function CaseDetailView({ caseId, rolePrefix = 'admin' }: CaseDetailViewP
     )
   }
 
-  const officer = mockUsers.find((u) => u.full_name === caseItem.assigned_officer)
+  const officer = typeof caseItem.assigned_officer === 'object' ? caseItem.assigned_officer : mockUsers.find((u) => u.full_name === (caseItem.assigned_officer as string))
 
   const getStatusVariant = (status: string) => {
     const variants: Record<string, any> = {
