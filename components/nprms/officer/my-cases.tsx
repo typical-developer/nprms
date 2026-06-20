@@ -1,0 +1,81 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { mockCases } from '@/lib/mock-data'
+import { formatDistanceToNow } from 'date-fns'
+import { Eye } from 'lucide-react'
+
+export function MyCases() {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const officerCases = mockCases.filter(
+    (c) => c.assignedOfficer === 'Ibrahim Musa'
+  )
+
+  if (!mounted) {
+    return null
+  }
+
+  const getStatusVariant = (status: string) => {
+    const variants: Record<string, any> = {
+      'Under Investigation': 'default',
+      'Registered': 'secondary',
+      'Assigned': 'outline',
+      'Resolved': 'accent',
+      'Closed': 'info',
+      'Archived': 'secondary',
+      'Reopened': 'warning',
+    }
+    return variants[status] || 'default'
+  }
+
+  const getPriorityVariant = (priority: string) => {
+    const variants: Record<string, any> = {
+      Critical: 'destructive',
+      High: 'warning',
+      Medium: 'info',
+      Low: 'secondary',
+    }
+    return variants[priority] || 'secondary'
+  }
+
+  return (
+    <Card className="p-6">
+      <h3 className="text-lg font-semibold mb-4">My Cases</h3>
+      <div className="space-y-3">
+        {officerCases.map((caseItem) => (
+          <div
+            key={caseItem.id}
+            className="flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
+          >
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <p className="font-medium text-sm">{caseItem.caseNumber}</p>
+                <Badge variant={getStatusVariant(caseItem.status)} className="text-xs">
+                  {caseItem.status}
+                </Badge>
+                <Badge variant={getPriorityVariant(caseItem.priority)} className="text-xs">
+                  {caseItem.priority}
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground">{caseItem.title}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Updated {formatDistanceToNow(new Date(caseItem.updatedAt), { addSuffix: true })}
+              </p>
+            </div>
+            <Button variant="outline" size="sm" className="ml-2">
+              <Eye className="w-4 h-4" />
+            </Button>
+          </div>
+        ))}
+      </div>
+    </Card>
+  )
+}
