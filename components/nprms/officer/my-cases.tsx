@@ -16,7 +16,7 @@ export function MyCases() {
   }, [])
 
   const officerCases = mockCases.filter(
-    (c) => c.assignedOfficer === 'Ibrahim Musa'
+    (c) => c.assigned_officer === 'Ibrahim Musa'
   )
 
   if (!mounted) {
@@ -52,12 +52,12 @@ export function MyCases() {
       <div className="space-y-3">
         {officerCases.map((caseItem) => (
           <div
-            key={caseItem.id}
+            key={caseItem.case_id}
             className="flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
           >
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <p className="font-medium text-sm">{caseItem.caseNumber}</p>
+                <p className="font-medium text-sm">{caseItem.case_number}</p>
                 <Badge variant={getStatusVariant(caseItem.status)} className="text-xs">
                   {caseItem.status}
                 </Badge>
@@ -67,7 +67,7 @@ export function MyCases() {
               </div>
               <p className="text-xs text-muted-foreground">{caseItem.title}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Updated {formatDistanceToNow(new Date(caseItem.updatedAt), { addSuffix: true })}
+                Updated {formatDistanceToNow(new Date(caseItem.date_reported), { addSuffix: true })}
               </p>
             </div>
             <Button variant="outline" size="sm" className="ml-2">

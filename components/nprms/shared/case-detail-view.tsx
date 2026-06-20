@@ -22,7 +22,7 @@ export function CaseDetailView({ caseId, rolePrefix = 'admin' }: CaseDetailViewP
     setMounted(true)
   }, [])
 
-  const caseItem = mockCases.find((c) => c.id === caseId)
+  const caseItem = mockCases.find((c) => c.case_id === caseId)
 
   if (!caseItem) {
     return (
@@ -32,7 +32,7 @@ export function CaseDetailView({ caseId, rolePrefix = 'admin' }: CaseDetailViewP
     )
   }
 
-  const officer = mockUsers.find((u) => u.name === caseItem.assignedOfficer)
+  const officer = mockUsers.find((u) => u.full_name === caseItem.assigned_officer)
 
   const getStatusVariant = (status: string) => {
     const variants: Record<string, any> = {
@@ -75,7 +75,7 @@ export function CaseDetailView({ caseId, rolePrefix = 'admin' }: CaseDetailViewP
           <Card className="p-6">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h1 className="text-3xl font-bold">{caseItem.caseNumber}</h1>
+                <h1 className="text-3xl font-bold">{caseItem.case_number}</h1>
                 <p className="text-muted-foreground mt-1">{caseItem.title}</p>
               </div>
               <Button variant="outline" size="sm" className="gap-2">
@@ -105,12 +105,12 @@ export function CaseDetailView({ caseId, rolePrefix = 'admin' }: CaseDetailViewP
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Registered</p>
-                <p className="font-medium">{format(new Date(caseItem.createdAt), 'MMM d, yyyy')}</p>
+                <p className="font-medium">{format(new Date(caseItem.date_reported), 'MMM d, yyyy')}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Last Updated</p>
                 <p className="font-medium">
-                  {formatDistanceToNow(new Date(caseItem.updatedAt), { addSuffix: true })}
+                  {formatDistanceToNow(new Date(caseItem.date_reported), { addSuffix: true })}
                 </p>
               </div>
             </div>
@@ -124,7 +124,7 @@ export function CaseDetailView({ caseId, rolePrefix = 'admin' }: CaseDetailViewP
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Investigation Updates</h2>
             <div className="space-y-4">
-              {caseItem.investigationUpdates.map((update, index) => (
+              {(caseItem.investigation_updates || []).map((update: any, index: number) => (
                 <div key={index} className="pb-4 border-b last:border-b-0 last:pb-0">
                   <div className="flex items-start justify-between mb-2">
                     <p className="font-medium">{update.description}</p>
@@ -132,7 +132,7 @@ export function CaseDetailView({ caseId, rolePrefix = 'admin' }: CaseDetailViewP
                       {format(new Date(update.date), 'MMM d, yyyy HH:mm')}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground">By: {update.updatedBy}</p>
+                  <p className="text-sm text-muted-foreground">By: {update.updated_by}</p>
                 </div>
               ))}
             </div>
@@ -146,7 +146,7 @@ export function CaseDetailView({ caseId, rolePrefix = 'admin' }: CaseDetailViewP
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Name</p>
-                  <p className="font-medium">{officer.name}</p>
+                  <p className="font-medium">{officer.full_name}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Email</p>
@@ -154,7 +154,7 @@ export function CaseDetailView({ caseId, rolePrefix = 'admin' }: CaseDetailViewP
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Badge</p>
-                  <p className="font-medium">{officer.badgeNumber}</p>
+                  <p className="font-medium">{officer.badge_number}</p>
                 </div>
               </div>
             )}
@@ -167,19 +167,19 @@ export function CaseDetailView({ caseId, rolePrefix = 'admin' }: CaseDetailViewP
                 <p className="text-sm text-muted-foreground mb-1">Days Active</p>
                 <p className="font-medium">
                   {Math.floor(
-                    (new Date().getTime() - new Date(caseItem.createdAt).getTime()) /
+                    (new Date().getTime() - new Date(caseItem.date_reported).getTime()) /
                       (1000 * 60 * 60 * 24)
                   )}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Investigation Updates</p>
-                <p className="font-medium">{caseItem.investigationUpdates.length}</p>
+                <p className="font-medium">{(caseItem.investigation_updates || []).length}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Notifications</p>
                 <p className="font-medium">
-                  {caseItem.notifications?.length || 0}
+                  {(caseItem as any).notifications?.length || 0}
                 </p>
               </div>
             </div>

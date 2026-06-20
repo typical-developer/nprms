@@ -7,16 +7,25 @@ import { Input } from '@/components/ui/input'
 import { mockCases } from '@/lib/mock-data'
 import { formatDistanceToNow } from 'date-fns'
 import { Search, Eye } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export function AllCasesList() {
+  const [mounted, setMounted] = useState(false)
   const [search, setSearch] = useState('')
 
-  const filteredCases = mockCases.filter(
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
+
+  const filteredCases = (mockCases || []).filter(
     (c) =>
-      c.caseNumber.toLowerCase().includes(search.toLowerCase()) ||
-      c.title.toLowerCase().includes(search.toLowerCase()) ||
-      c.assignedOfficer.toLowerCase().includes(search.toLowerCase())
+      (c.caseNumber || '').toLowerCase().includes((search || '').toLowerCase()) ||
+      (c.title || '').toLowerCase().includes((search || '').toLowerCase()) ||
+      (c.assignedOfficer || '').toLowerCase().includes((search || '').toLowerCase())
   )
 
   const getStatusVariant = (status: string) => {
@@ -70,7 +79,7 @@ export function AllCasesList() {
                   </Badge>
                 </td>
                 <td className="py-3 px-2 text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(caseItem.updatedAt), { addSuffix: true })}
+                  {caseItem.updatedAt && formatDistanceToNow(new Date(caseItem.updatedAt), { addSuffix: true })}
                 </td>
                 <td className="py-3 px-2 text-right">
                   <Button variant="ghost" size="sm">

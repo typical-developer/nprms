@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,13 +8,22 @@ import { mockUsers } from '@/lib/mock-data'
 import { Edit2, Trash2, Shield, Search } from 'lucide-react'
 
 export function UsersTable() {
+  const [mounted, setMounted] = useState(false)
   const [search, setSearch] = useState('')
 
-  const filteredUsers = mockUsers.filter(
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
+
+  const filteredUsers = (mockUsers || []).filter(
     (u) =>
-      u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase()) ||
-      u.role.toLowerCase().includes(search.toLowerCase())
+      (u.name || '').toLowerCase().includes((search || '').toLowerCase()) ||
+      (u.email || '').toLowerCase().includes((search || '').toLowerCase()) ||
+      (u.role || '').toLowerCase().includes((search || '').toLowerCase())
   )
 
   const getRoleBadgeVariant = (role: string) => {

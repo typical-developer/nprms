@@ -128,22 +128,22 @@ export function CasesTable({ rolePrefix = 'admin' }: { rolePrefix?: string }) {
           </thead>
           <tbody className="divide-y">
             {filteredCases && filteredCases.map((caseItem) => (
-              <tr key={caseItem?.id || Math.random()} className="hover:bg-muted/50 transition-colors">
-                <td className="py-3 px-4 font-medium">{caseItem.caseNumber}</td>
+              <tr key={caseItem?.case_id || Math.random()} className="hover:bg-muted/50 transition-colors">
+                <td className="py-3 px-4 font-medium">{caseItem.case_number}</td>
                 <td className="py-3 px-4 max-w-xs truncate">{caseItem.title}</td>
                 <td className="py-3 px-4 text-xs">{caseItem.category}</td>
                 <td className="py-3 px-4 text-xs text-muted-foreground">{caseItem.location}</td>
-                <td className="py-3 px-4 text-xs">{caseItem.assignedOfficer}</td>
+                <td className="py-3 px-4 text-xs">{caseItem.assigned_officer}</td>
                 <td className="py-3 px-4">
                   <Badge variant={getStatusVariant(caseItem.status)} className="text-xs">
                     {caseItem.status}
                   </Badge>
                 </td>
                 <td className="py-3 px-4 text-xs text-muted-foreground">
-                  {caseItem.updatedAt && formatDistanceToNow(new Date(caseItem.updatedAt), { addSuffix: true })}
+                  {caseItem.date_reported && formatDistanceToNow(new Date(caseItem.date_reported), { addSuffix: true })}
                 </td>
                 <td className="py-3 px-4 text-right">
-                  <Link href={`/${rolePrefix}/cases/${caseItem.id}`}>
+                  <Link href={`/${rolePrefix}/cases/${caseItem.case_id}`}>
                     <Button variant="ghost" size="sm">
                       <Eye className="w-4 h-4" />
                     </Button>

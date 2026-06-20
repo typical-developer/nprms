@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,21 +15,30 @@ interface SearchResultsProps {
 }
 
 export function SearchResults({ rolePrefix = 'admin' }: SearchResultsProps) {
+  const [mounted, setMounted] = useState(false)
   const [query, setQuery] = useState('')
 
-  const searchCases = mockCases.filter(
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
+
+  const searchCases = (mockCases || []).filter(
     (c) =>
-      c.caseNumber.toLowerCase().includes(query.toLowerCase()) ||
-      c.title.toLowerCase().includes(query.toLowerCase()) ||
-      c.description.toLowerCase().includes(query.toLowerCase()) ||
-      c.location.toLowerCase().includes(query.toLowerCase())
+      (c.caseNumber || '').toLowerCase().includes((query || '').toLowerCase()) ||
+      (c.title || '').toLowerCase().includes((query || '').toLowerCase()) ||
+      (c.description || '').toLowerCase().includes((query || '').toLowerCase()) ||
+      (c.location || '').toLowerCase().includes((query || '').toLowerCase())
   )
 
-  const searchUsers = mockUsers.filter(
+  const searchUsers = (mockUsers || []).filter(
     (u) =>
-      u.name.toLowerCase().includes(query.toLowerCase()) ||
-      u.email.toLowerCase().includes(query.toLowerCase()) ||
-      u.badgeNumber.toLowerCase().includes(query.toLowerCase())
+      (u.name || '').toLowerCase().includes((query || '').toLowerCase()) ||
+      (u.email || '').toLowerCase().includes((query || '').toLowerCase()) ||
+      (u.badgeNumber || '').toLowerCase().includes((query || '').toLowerCase())
   )
 
   const getStatusVariant = (status: string) => {

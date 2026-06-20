@@ -1,11 +1,22 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { mockActivityLog } from '@/lib/mock-data'
 import { formatDistanceToNow } from 'date-fns'
 
 export function ActivityLog() {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
+
   const recentActivity = mockActivityLog.slice(0, 10)
 
   const getInitials = (name: string) => {

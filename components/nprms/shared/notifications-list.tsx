@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -9,6 +10,16 @@ import { formatDistanceToNow, format } from 'date-fns'
 import { AlertCircle, CheckCircle2, Bell, Clock } from 'lucide-react'
 
 export function NotificationsList() {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
+
   // Generate notifications from mock data
   const notifications = mockCases
     .flatMap((c) =>
