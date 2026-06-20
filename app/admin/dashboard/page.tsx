@@ -1,3 +1,5 @@
+'use client'
+
 import { Button } from '@/components/ui/button'
 import { AuthLayout } from '@/components/nprms/auth-layout'
 import { NPRMSHeader } from '@/components/nprms/header'
@@ -6,6 +8,7 @@ import { StatusDistributionChart } from '@/components/nprms/admin/status-distrib
 import { OverdueCases } from '@/components/nprms/admin/overdue-cases'
 import { ActivityLog } from '@/components/nprms/admin/activity-log'
 import { UserPlus, FileText, ClipboardCheck } from 'lucide-react'
+import Link from 'next/link'
 
 export default function AdminDashboardPage() {
   return (
@@ -15,24 +18,30 @@ export default function AdminDashboardPage() {
         description="Overview of all cases, officers, and system activity"
         actions={
           <>
-            <Button className="w-full sm:w-auto h-9 text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 hover:shadow-lg hover:shadow-primary/30 hover:scale-105 gap-2">
-              <UserPlus className="w-4 h-4" />
-              Create User
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full sm:w-auto h-9 text-sm transition-all duration-300 hover:shadow-md hover:scale-105 gap-2"
-            >
-              <FileText className="w-4 h-4" />
-              Assign Case
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full sm:w-auto h-9 text-sm transition-all duration-300 hover:shadow-md hover:scale-105 gap-2"
-            >
-              <ClipboardCheck className="w-4 h-4" />
-              View Reports
-            </Button>
+            <Link href="/admin/users">
+              <Button className="w-full sm:w-auto h-9 text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 hover:shadow-lg hover:shadow-primary/30 hover:scale-105 gap-2">
+                <UserPlus className="w-4 h-4" />
+                Create User
+              </Button>
+            </Link>
+            <Link href="/admin/cases">
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto h-9 text-sm transition-all duration-300 hover:shadow-md hover:scale-105 gap-2"
+              >
+                <FileText className="w-4 h-4" />
+                Assign Case
+              </Button>
+            </Link>
+            <Link href="/admin/reports">
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto h-9 text-sm transition-all duration-300 hover:shadow-md hover:scale-105 gap-2"
+              >
+                <ClipboardCheck className="w-4 h-4" />
+                View Reports
+              </Button>
+            </Link>
           </>
         }
       />

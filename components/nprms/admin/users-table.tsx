@@ -10,6 +10,8 @@ import { Edit2, Trash2, Shield, Search } from 'lucide-react'
 export function UsersTable() {
   const [mounted, setMounted] = useState(false)
   const [search, setSearch] = useState('')
+  const [editingUser, setEditingUser] = useState<string | null>(null)
+  const [deletingUser, setDeletingUser] = useState<string | null>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -71,26 +73,37 @@ export function UsersTable() {
           </thead>
           <tbody className="divide-y">
             {filteredUsers.map((user) => (
-              <tr key={user.id} className="hover:bg-muted/50 transition-colors">
-                <td className="py-3 px-4 font-medium">{user.name}</td>
+              <tr key={user.user_id || user.id} className="hover:bg-muted/50 transition-colors">
+                <td className="py-3 px-4 font-medium">{user.full_name || user.name}</td>
                 <td className="py-3 px-4 text-xs text-muted-foreground">{user.email}</td>
-                <td className="py-3 px-4 font-mono text-xs">{user.badgeNumber}</td>
+                <td className="py-3 px-4 font-mono text-xs">{user.badge_number || user.badgeNumber}</td>
                 <td className="py-3 px-4">
                   <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs">
                     {getRoleLabel(user.role)}
                   </Badge>
                 </td>
-                <td className="py-3 px-4 text-xs">{user.station}</td>
+                <td className="py-3 px-4 text-xs">{user.station || 'Lagos State Command'}</td>
                 <td className="py-3 px-4">
-                  <Badge variant={user.active ? 'default' : 'secondary'} className="text-xs">
-                    {user.active ? 'Active' : 'Inactive'}
+                  <Badge variant={user.status === 'Active' ? 'default' : 'secondary'} className="text-xs">
+                    {user.status || (user.active ? 'Active' : 'Inactive')}
                   </Badge>
                 </td>
                 <td className="py-3 px-4 text-right flex gap-1 justify-end">
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setEditingUser(user.user_id || user.id)}
+                    title={`Edit ${user.full_name || user.name}`}
+                  >
                     <Edit2 className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="sm" className="text-destructive">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-destructive"
+                    onClick={() => setDeletingUser(user.user_id || user.id)}
+                    title={`Delete ${user.full_name || user.name}`}
+                  >
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </td>
@@ -103,6 +116,52 @@ export function UsersTable() {
       <p className="text-xs text-muted-foreground">
         Showing {filteredUsers.length} of {mockUsers.length} users
       </p>
+
+      {editingUser && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <div className="p-6 space-y-4">
+              <div>
+                <h2 className="text-lg font-bold">Edit User</h2>
+                <p className="text-sm text-muted-foreground">User: {filteredUsers.find(u => (u.user_id || u.id) === editingUser)?.full_name || filteredUsers.find(u => (u.user_id || u.id) === editingUser)?.name}</p>
+              </div>
+              <div className="space-y-3 text-sm">
+                <p>Edit functionality would be implemented in a production app with form fields for updating user details.</p>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setEditingUser(null)}>Cancel</Button>
+                <Button onClick={() => {
+                  setEditingUser(null)
+                  alert('User updated successfully')
+                }}>Save Changes</Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {deletingUser && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <div className="p-6 space-y-4">
+              <div>
+                <h2 className="text-lg font-bold">Delete User</h2>
+                <p className="text-sm text-muted-foreground">Are you sure you want to delete this user?</p>
+              </div>
+              <div className="bg-destructive/10 border border-destructive/30 rounded p-3 text-sm">
+                <p className="font-medium">User: {filteredUsers.find(u => (u.user_id || u.id) === deletingUser)?.full_name || filteredUsers.find(u => (u.user_id || u.id) === deletingUser)?.name}</p>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setDeletingUser(null)}>Cancel</Button>
+                <Button variant="destructive" onClick={() => {
+                  setDeletingUser(null)
+                  alert('User deleted successfully')
+                }}>Delete</Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }

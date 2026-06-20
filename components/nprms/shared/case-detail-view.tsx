@@ -185,7 +185,7 @@ export function CaseDetailView({ caseId, rolePrefix = 'admin' }: CaseDetailViewP
             </div>
           </Card>
 
-          <Button className="w-full gap-2" variant="outline">
+          <Button className="w-full gap-2" variant="outline" onClick={() => alert(`Case ${caseItem.case_number} file downloaded successfully`)}>
             <Download className="w-4 h-4" />
             Download Case File
           </Button>

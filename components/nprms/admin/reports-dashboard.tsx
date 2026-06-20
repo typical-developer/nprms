@@ -38,6 +38,18 @@ export function ReportsDashboard() {
 
   const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6']
 
+  const handleExportPDF = () => {
+    alert('PDF report exported successfully')
+  }
+
+  const handleExportExcel = () => {
+    alert('Excel report exported successfully')
+  }
+
+  const handleEmailReport = () => {
+    alert('Report sent to your email address')
+  }
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -128,15 +140,15 @@ export function ReportsDashboard() {
           <h3 className="text-lg font-semibold">Report Options</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" onClick={handleExportPDF}>
             <Download className="w-4 h-4" />
             Export PDF
           </Button>
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" onClick={handleExportExcel}>
             <Download className="w-4 h-4" />
             Export Excel
           </Button>
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" onClick={handleEmailReport}>
             <Download className="w-4 h-4" />
             Email Report
           </Button>

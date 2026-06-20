@@ -34,13 +34,13 @@ export function ProfileCard() {
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-4">
             <div className="w-24 h-24 bg-gradient-to-br from-primary to-primary/60 rounded-full flex items-center justify-center text-white text-3xl font-bold">
-              {userData.name
+              {(userData.full_name || userData.name || 'User')
                 .split(' ')
                 .map((n) => n[0])
                 .join('')}
             </div>
             <div>
-              <h1 className="text-3xl font-bold">{userData.name}</h1>
+              <h1 className="text-3xl font-bold">{userData.full_name || userData.name}</h1>
               <Badge variant={roleBadgeVariants[userData.role]} className="mt-2">
                 {roleLabels[userData.role]}
               </Badge>
@@ -67,7 +67,7 @@ export function ProfileCard() {
             <p className="text-sm text-muted-foreground mb-1">Badge Number</p>
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-muted-foreground" />
-              <p className="font-mono font-medium">{userData.badgeNumber}</p>
+              <p className="font-mono font-medium">{userData.badge_number || userData.badgeNumber || 'N/A'}</p>
             </div>
           </div>
 
@@ -75,14 +75,14 @@ export function ProfileCard() {
             <p className="text-sm text-muted-foreground mb-1">Station</p>
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-muted-foreground" />
-              <p className="font-medium">{userData.station}</p>
+              <p className="font-medium">{userData.station || 'Lagos State Command'}</p>
             </div>
           </div>
 
           <div>
             <p className="text-sm text-muted-foreground mb-1">Status</p>
-            <Badge variant={userData.active ? 'default' : 'secondary'}>
-              {userData.active ? 'Active' : 'Inactive'}
+            <Badge variant={userData.status === 'Active' || userData.active ? 'default' : 'secondary'}>
+              {userData.status || (userData.active ? 'Active' : 'Inactive')}
             </Badge>
           </div>
         </div>
