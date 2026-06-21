@@ -9,11 +9,18 @@ import { Spinner } from '@/components/ui/spinner'
 interface AuthLayoutProps {
   children: React.ReactNode
   requiredRole?: 'administrator' | 'officer' | 'records'
+  title?: string
 }
 
-export function AuthLayout({ children, requiredRole }: AuthLayoutProps) {
+export function AuthLayout({ children, requiredRole, title }: AuthLayoutProps) {
   const { user, loading } = useAuth()
   const router = useRouter()
+
+  useEffect(() => {
+    if (title) {
+      document.title = `NPRMS — ${title}`
+    }
+  }, [title])
 
   useEffect(() => {
     if (!loading && !user) {

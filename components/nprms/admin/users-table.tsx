@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { mockUsers } from '@/lib/mock-data'
+import { Card } from '@/components/ui/card'
+import { useUsers } from '@/lib/user-context'
 import { Edit2, Trash2, Shield, Search } from 'lucide-react'
 
 export function UsersTable() {
@@ -12,6 +13,8 @@ export function UsersTable() {
   const [search, setSearch] = useState('')
   const [editingUser, setEditingUser] = useState<string | null>(null)
   const [deletingUser, setDeletingUser] = useState<string | null>(null)
+  const [editFormData, setEditFormData] = useState({ full_name: '', email: '', badge_number: '' })
+  const { users, updateUser, deleteUser } = useUsers()
 
   useEffect(() => {
     setMounted(true)
@@ -21,12 +24,38 @@ export function UsersTable() {
     return null
   }
 
-  const filteredUsers = (mockUsers || []).filter(
+  const filteredUsers = (users || []).filter(
     (u) =>
-      (u.name || '').toLowerCase().includes((search || '').toLowerCase()) ||
+      (u.full_name || '').toLowerCase().includes((search || '').toLowerCase()) ||
       (u.email || '').toLowerCase().includes((search || '').toLowerCase()) ||
       (u.role || '').toLowerCase().includes((search || '').toLowerCase())
   )
+
+  const handleEditClick = (user_id: string) => {
+    const user = users.find((u) => u.user_id === user_id)
+    if (user) {
+      setEditFormData({
+        full_name: user.full_name,
+        email: user.email,
+        badge_number: user.badge_number,
+      })
+    }
+    setEditingUser(user_id)
+  }
+
+  const handleSaveEdit = () => {
+    if (editingUser) {
+      updateUser(editingUser, editFormData)
+      setEditingUser(null)
+    }
+  }
+
+  const handleDeleteUser = () => {
+    if (deletingUser) {
+      deleteUser(deletingUser)
+      setDeletingUser(null)
+    }
+  }
 
   const getRoleBadgeVariant = (role: string) => {
     const variants: Record<string, any> = {
@@ -73,27 +102,27 @@ export function UsersTable() {
           </thead>
           <tbody className="divide-y">
             {filteredUsers.map((user) => (
-              <tr key={user.user_id || user.id} className="hover:bg-muted/50 transition-colors">
-                <td className="py-3 px-4 font-medium">{user.full_name || user.name}</td>
+              <tr key={user.user_id} className="hover:bg-muted/50 transition-colors">
+                <td className="py-3 px-4 font-medium">{user.full_name}</td>
                 <td className="py-3 px-4 text-xs text-muted-foreground">{user.email}</td>
-                <td className="py-3 px-4 font-mono text-xs">{user.badge_number || user.badgeNumber}</td>
+                <td className="py-3 px-4 font-mono text-xs">{user.badge_number}</td>
                 <td className="py-3 px-4">
                   <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs">
                     {getRoleLabel(user.role)}
                   </Badge>
                 </td>
-                <td className="py-3 px-4 text-xs">{user.station || 'Lagos State Command'}</td>
+                <td className="py-3 px-4 text-xs">{'Lagos State Command'}</td>
                 <td className="py-3 px-4">
                   <Badge variant={user.status === 'Active' ? 'default' : 'secondary'} className="text-xs">
-                    {user.status || (user.active ? 'Active' : 'Inactive')}
+                    {user.status}
                   </Badge>
                 </td>
                 <td className="py-3 px-4 text-right flex gap-1 justify-end">
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    onClick={() => setEditingUser(user.user_id || user.id)}
-                    title={`Edit ${user.full_name || user.name}`}
+                    onClick={() => handleEditClick(user.user_id)}
+                    title={`Edit ${user.full_name}`}
                   >
                     <Edit2 className="w-4 h-4" />
                   </Button>
@@ -101,8 +130,8 @@ export function UsersTable() {
                     variant="ghost" 
                     size="sm" 
                     className="text-destructive"
-                    onClick={() => setDeletingUser(user.user_id || user.id)}
-                    title={`Delete ${user.full_name || user.name}`}
+                    onClick={() => setDeletingUser(user.user_id)}
+                    title={`Delete ${user.full_name}`}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -114,7 +143,7 @@ export function UsersTable() {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Showing {filteredUsers.length} of {mockUsers.length} users
+        Showing {filteredUsers.length} of {users.length} users
       </p>
 
       {editingUser && (
@@ -123,17 +152,38 @@ export function UsersTable() {
             <div className="p-6 space-y-4">
               <div>
                 <h2 className="text-lg font-bold">Edit User</h2>
-                <p className="text-sm text-muted-foreground">User: {filteredUsers.find(u => (u.user_id || u.id) === editingUser)?.full_name || filteredUsers.find(u => (u.user_id || u.id) === editingUser)?.name}</p>
+                <p className="text-sm text-muted-foreground">User: {filteredUsers.find(u => u.user_id === editingUser)?.full_name}</p>
               </div>
-              <div className="space-y-3 text-sm">
-                <p>Edit functionality would be implemented in a production app with form fields for updating user details.</p>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Full Name</label>
+                  <Input
+                    value={editFormData.full_name}
+                    onChange={(e) => setEditFormData({ ...editFormData, full_name: e.target.value })}
+                    placeholder="Enter full name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Email</label>
+                  <Input
+                    value={editFormData.email}
+                    onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                    placeholder="Enter email"
+                    type="email"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Badge Number</label>
+                  <Input
+                    value={editFormData.badge_number}
+                    onChange={(e) => setEditFormData({ ...editFormData, badge_number: e.target.value })}
+                    placeholder="Enter badge number"
+                  />
+                </div>
               </div>
               <div className="flex gap-2 justify-end">
                 <Button variant="outline" onClick={() => setEditingUser(null)}>Cancel</Button>
-                <Button onClick={() => {
-                  setEditingUser(null)
-                  alert('User updated successfully')
-                }}>Save Changes</Button>
+                <Button onClick={handleSaveEdit}>Save Changes</Button>
               </div>
             </div>
           </Card>
@@ -149,14 +199,11 @@ export function UsersTable() {
                 <p className="text-sm text-muted-foreground">Are you sure you want to delete this user?</p>
               </div>
               <div className="bg-destructive/10 border border-destructive/30 rounded p-3 text-sm">
-                <p className="font-medium">User: {filteredUsers.find(u => (u.user_id || u.id) === deletingUser)?.full_name || filteredUsers.find(u => (u.user_id || u.id) === deletingUser)?.name}</p>
+                <p className="font-medium">User: {filteredUsers.find(u => u.user_id === deletingUser)?.full_name}</p>
               </div>
               <div className="flex gap-2 justify-end">
                 <Button variant="outline" onClick={() => setDeletingUser(null)}>Cancel</Button>
-                <Button variant="destructive" onClick={() => {
-                  setDeletingUser(null)
-                  alert('User deleted successfully')
-                }}>Delete</Button>
+                <Button variant="destructive" onClick={handleDeleteUser}>Delete</Button>
               </div>
             </div>
           </Card>

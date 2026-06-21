@@ -11,7 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { mockCases } from '@/lib/mock-data'
+import { useCases } from '@/lib/case-context'
+import { getStatusVariant } from '@/lib/badge-colors'
 import { formatDistanceToNow } from 'date-fns'
 import { Search, Eye } from 'lucide-react'
 import Link from 'next/link'
@@ -21,6 +22,7 @@ export function CasesTable({ rolePrefix = 'admin' }: { rolePrefix?: string }) {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [categoryFilter, setCategoryFilter] = useState<string>('')
+  const { cases } = useCases()
 
   useEffect(() => {
     setMounted(true)
@@ -33,7 +35,7 @@ export function CasesTable({ rolePrefix = 'admin' }: { rolePrefix?: string }) {
   const normalizedStatusFilter = statusFilter || 'all'
   const normalizedCategoryFilter = categoryFilter || 'all'
 
-  const filteredCases = (mockCases || []).filter((c) => {
+  const filteredCases = (cases || []).filter((c) => {
     if (!c || !search) {
       // Only check filters if no search
       const matchesStatus = normalizedStatusFilter === 'all' || c.status === statusFilter
@@ -42,7 +44,7 @@ export function CasesTable({ rolePrefix = 'admin' }: { rolePrefix?: string }) {
     }
     
     const matchesSearch =
-      (c.caseNumber || '').toLowerCase().includes((search || '').toLowerCase()) ||
+      (c.case_number || '').toLowerCase().includes((search || '').toLowerCase()) ||
       (c.title || '').toLowerCase().includes((search || '').toLowerCase()) ||
       (c.location || '').toLowerCase().includes((search || '').toLowerCase())
 
@@ -52,21 +54,8 @@ export function CasesTable({ rolePrefix = 'admin' }: { rolePrefix?: string }) {
     return matchesSearch && matchesStatus && matchesCategory
   })
 
-  const statuses = Array.from(new Set(mockCases.map((c) => c.status)))
-  const categories = Array.from(new Set(mockCases.map((c) => c.category)))
-
-  const getStatusVariant = (status: string) => {
-    const variants: Record<string, any> = {
-      'Under Investigation': 'default',
-      'Registered': 'secondary',
-      'Assigned': 'outline',
-      'Resolved': 'accent',
-      'Closed': 'info',
-      'Archived': 'secondary',
-      'Reopened': 'warning',
-    }
-    return variants[status] || 'default'
-  }
+  const statuses = Array.from(new Set(cases.map((c) => c.status)))
+  const categories = Array.from(new Set(cases.map((c) => c.category)))
 
   return (
     <div className="space-y-4">
@@ -134,11 +123,7 @@ export function CasesTable({ rolePrefix = 'admin' }: { rolePrefix?: string }) {
                 <td className="py-3 px-4 text-xs">{caseItem.category}</td>
                 <td className="py-3 px-4 text-xs text-muted-foreground">{caseItem.location}</td>
                 <td className="py-3 px-4 text-xs">
-                  {typeof caseItem.assigned_officer === 'object' && caseItem.assigned_officer ? (
-                    (caseItem.assigned_officer as any).full_name
-                  ) : (
-                    caseItem.assigned_officer as string
-                  )}
+                  {caseItem.assigned_officer ? caseItem.assigned_officer.full_name : 'Unassigned'}
                 </td>
                 <td className="py-3 px-4">
                   <Badge variant={getStatusVariant(caseItem.status)} className="text-xs">
@@ -162,7 +147,7 @@ export function CasesTable({ rolePrefix = 'admin' }: { rolePrefix?: string }) {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Showing {filteredCases.length} of {mockCases.length} cases
+        Showing {filteredCases.length} of {cases.length} cases
       </p>
     </div>
   )

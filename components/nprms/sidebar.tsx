@@ -4,9 +4,10 @@ import { LayoutDashboard, FileText, Users, BarChart3, Search, Bell, Settings, He
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { Role } from '@/lib/mock-data'
+import { Button } from '@/components/ui/button'
 
 interface MenuItem {
   icon: any
@@ -16,9 +17,9 @@ interface MenuItem {
 }
 
 function getMenuItemsForRole(role: Role): { menu: MenuItem[], general: MenuItem[] } {
-  const baseGeneral: MenuItem[] = [
-    { icon: Settings, label: 'Settings', href: '/settings' },
-    { icon: HelpCircle, label: 'Help', href: '/help' },
+  const getBaseGeneral = (rolePrefix: string): MenuItem[] => [
+    { icon: Settings, label: 'Settings', href: `/${rolePrefix}/settings` },
+    { icon: HelpCircle, label: 'Help', href: `/${rolePrefix}/help` },
     { icon: LogOut, label: 'Logout', href: '/logout' },
   ]
 
@@ -30,12 +31,12 @@ function getMenuItemsForRole(role: Role): { menu: MenuItem[], general: MenuItem[
           { icon: FileText, label: 'All Cases', href: '/admin/cases' },
           { icon: Users, label: 'Users', href: '/admin/users' },
           { icon: BarChart3, label: 'Reports', href: '/admin/reports' },
-          { icon: Search, label: 'Search', href: '/search' },
-          { icon: Bell, label: 'Notifications', href: '/notifications' },
+          { icon: Search, label: 'Search', href: '/admin/search' },
+          { icon: Bell, label: 'Notifications', href: '/admin/notifications' },
         ],
         general: [
-          { icon: Settings, label: 'Profile', href: '/profile' },
-          ...baseGeneral,
+          { icon: Settings, label: 'Profile', href: '/admin/profile' },
+          ...getBaseGeneral('admin'),
         ],
       }
     case 'officer':
@@ -43,42 +44,48 @@ function getMenuItemsForRole(role: Role): { menu: MenuItem[], general: MenuItem[
         menu: [
           { icon: LayoutDashboard, label: 'Dashboard', href: '/officer/dashboard' },
           { icon: FileText, label: 'My Cases', href: '/officer/cases' },
-          { icon: Search, label: 'Search', href: '/search' },
-          { icon: Bell, label: 'Notifications', href: '/notifications' },
+          { icon: Search, label: 'Search', href: '/officer/search' },
+          { icon: Bell, label: 'Notifications', href: '/officer/notifications' },
         ],
         general: [
-          { icon: Settings, label: 'Profile', href: '/profile' },
-          ...baseGeneral,
+          { icon: Settings, label: 'Profile', href: '/officer/profile' },
+          ...getBaseGeneral('officer'),
         ],
       }
     case 'records':
       return {
         menu: [
           { icon: LayoutDashboard, label: 'Dashboard', href: '/records/dashboard' },
-          { icon: FileText, label: 'Register Case', href: '/records/cases/new' },
+          { icon: FileText, label: 'Register Case', href: '/records/register' },
           { icon: FileText, label: 'All Cases', href: '/records/cases' },
           { icon: BarChart3, label: 'Archive', href: '/records/archive' },
-          { icon: Search, label: 'Search', href: '/search' },
-          { icon: Bell, label: 'Notifications', href: '/notifications' },
+          { icon: Search, label: 'Search', href: '/records/search' },
+          { icon: Bell, label: 'Notifications', href: '/records/notifications' },
         ],
         general: [
-          { icon: Settings, label: 'Profile', href: '/profile' },
-          ...baseGeneral,
+          { icon: Settings, label: 'Profile', href: '/records/profile' },
+          ...getBaseGeneral('records'),
         ],
       }
     default:
-      return { menu: [], general: baseGeneral }
+      return { menu: [], general: getBaseGeneral('') }
   }
 }
 
 export function Sidebar() {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
   const pathname = usePathname()
-  const { user } = useAuth()
+  const router = useRouter()
+  const { user, logout } = useAuth()
 
   if (!user) return null
 
   const { menu: menuItems, general: generalItems } = getMenuItemsForRole(user.role)
+
+  const handleLogout = () => {
+    logout()
+    router.push('/login')
+  }
 
   return (
     <aside className="fixed top-0 left-0 w-64 bg-card border-r border-border p-4 h-screen overflow-y-auto lg:block">
@@ -132,6 +139,27 @@ export function Sidebar() {
           <nav className="space-y-0.5">
             {generalItems.map((item) => {
               const isActive = pathname === item.href
+              
+              if (item.label === 'Logout') {
+                return (
+                  <Button
+                    key={item.label}
+                    variant="ghost"
+                    onClick={handleLogout}
+                    onMouseEnter={() => setHoveredItem(item.label)}
+                    onMouseLeave={() => setHoveredItem(null)}
+                    className={cn(
+                      'w-full justify-start flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all duration-300',
+                      'text-muted-foreground hover:bg-secondary hover:text-foreground',
+                      hoveredItem === item.label && 'translate-x-1',
+                    )}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    <span className="text-sm">{item.label}</span>
+                  </Button>
+                )
+              }
+              
               return (
                 <Link
                   key={item.label}

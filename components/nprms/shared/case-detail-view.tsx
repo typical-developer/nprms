@@ -5,7 +5,8 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { mockCases, mockUsers } from '@/lib/mock-data'
+import { mockCases, mockUsers, mockInvestigationUpdates } from '@/lib/mock-data'
+import { getStatusVariant, getPriorityVariant } from '@/lib/badge-colors'
 import { formatDistanceToNow, format } from 'date-fns'
 import { ArrowLeft, Download, Edit2 } from 'lucide-react'
 import Link from 'next/link'
@@ -32,30 +33,7 @@ export function CaseDetailView({ caseId, rolePrefix = 'admin' }: CaseDetailViewP
     )
   }
 
-  const officer = typeof caseItem.assigned_officer === 'object' ? caseItem.assigned_officer : mockUsers.find((u) => u.full_name === (caseItem.assigned_officer as string))
-
-  const getStatusVariant = (status: string) => {
-    const variants: Record<string, any> = {
-      'Under Investigation': 'default',
-      'Registered': 'secondary',
-      'Assigned': 'outline',
-      'Resolved': 'accent',
-      'Closed': 'info',
-      'Archived': 'secondary',
-      'Reopened': 'warning',
-    }
-    return variants[status] || 'default'
-  }
-
-  const getPriorityVariant = (priority: string) => {
-    const variants: Record<string, any> = {
-      Critical: 'destructive',
-      High: 'warning',
-      Medium: 'info',
-      Low: 'secondary',
-    }
-    return variants[priority] || 'secondary'
-  }
+  const officer = caseItem.assigned_officer && typeof caseItem.assigned_officer === 'object' ? caseItem.assigned_officer : null
 
   if (!mounted) {
     return null
@@ -124,17 +102,20 @@ export function CaseDetailView({ caseId, rolePrefix = 'admin' }: CaseDetailViewP
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Investigation Updates</h2>
             <div className="space-y-4">
-              {(caseItem.investigation_updates || []).map((update: any, index: number) => (
+              {mockInvestigationUpdates.filter((u) => u.case_id === caseItem.case_id).map((update, index) => (
                 <div key={index} className="pb-4 border-b last:border-b-0 last:pb-0">
                   <div className="flex items-start justify-between mb-2">
-                    <p className="font-medium">{update.description}</p>
+                    <p className="font-medium">{update.content}</p>
                     <span className="text-xs text-muted-foreground">
-                      {format(new Date(update.date), 'MMM d, yyyy HH:mm')}
+                      {format(new Date(update.created_at), 'MMM d, yyyy HH:mm')}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground">By: {update.updated_by}</p>
+                  <p className="text-sm text-muted-foreground">By: {update.officer_name}</p>
                 </div>
               ))}
+              {mockInvestigationUpdates.filter((u) => u.case_id === caseItem.case_id).length === 0 && (
+                <p className="text-sm text-muted-foreground">No investigation updates yet.</p>
+              )}
             </div>
           </Card>
         </div>
@@ -174,7 +155,7 @@ export function CaseDetailView({ caseId, rolePrefix = 'admin' }: CaseDetailViewP
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Investigation Updates</p>
-                <p className="font-medium">{(caseItem.investigation_updates || []).length}</p>
+                <p className="font-medium">{mockInvestigationUpdates.filter((u) => u.case_id === caseItem.case_id).length}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Notifications</p>

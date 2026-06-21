@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { mockCases, mockUsers } from '@/lib/mock-data'
+import { getStatusVariant, getRoleBadgeVariant } from '@/lib/badge-colors'
 import { Search, Eye } from 'lucide-react'
 import Link from 'next/link'
 
@@ -28,7 +29,7 @@ export function SearchResults({ rolePrefix = 'admin' }: SearchResultsProps) {
 
   const searchCases = (mockCases || []).filter(
     (c) =>
-      (c.caseNumber || '').toLowerCase().includes((query || '').toLowerCase()) ||
+      (c.case_number || '').toLowerCase().includes((query || '').toLowerCase()) ||
       (c.title || '').toLowerCase().includes((query || '').toLowerCase()) ||
       (c.description || '').toLowerCase().includes((query || '').toLowerCase()) ||
       (c.location || '').toLowerCase().includes((query || '').toLowerCase())
@@ -36,32 +37,10 @@ export function SearchResults({ rolePrefix = 'admin' }: SearchResultsProps) {
 
   const searchUsers = (mockUsers || []).filter(
     (u) =>
-      (u.name || '').toLowerCase().includes((query || '').toLowerCase()) ||
+      (u.full_name || '').toLowerCase().includes((query || '').toLowerCase()) ||
       (u.email || '').toLowerCase().includes((query || '').toLowerCase()) ||
-      (u.badgeNumber || '').toLowerCase().includes((query || '').toLowerCase())
+      (u.badge_number || '').toLowerCase().includes((query || '').toLowerCase())
   )
-
-  const getStatusVariant = (status: string) => {
-    const variants: Record<string, any> = {
-      'Under Investigation': 'default',
-      'Registered': 'secondary',
-      'Assigned': 'outline',
-      'Resolved': 'accent',
-      'Closed': 'info',
-      'Archived': 'secondary',
-      'Reopened': 'warning',
-    }
-    return variants[status] || 'default'
-  }
-
-  const getRoleBadgeVariant = (role: string) => {
-    const variants: Record<string, any> = {
-      administrator: 'default',
-      officer: 'secondary',
-      records: 'outline',
-    }
-    return variants[role] || 'secondary'
-  }
 
   const getRoleLabel = (role: string) => {
     const labels: Record<string, string> = {
@@ -106,11 +85,11 @@ export function SearchResults({ rolePrefix = 'admin' }: SearchResultsProps) {
               </Card>
             ) : (
               searchCases.map((caseItem) => (
-                <Card key={caseItem.id} className="p-4">
+                <Card key={caseItem.case_id} className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-semibold">{caseItem.caseNumber}</h3>
+                        <h3 className="font-semibold">{caseItem.case_number}</h3>
                         <Badge variant={getStatusVariant(caseItem.status)} className="text-xs">
                           {caseItem.status}
                         </Badge>
@@ -119,11 +98,11 @@ export function SearchResults({ rolePrefix = 'admin' }: SearchResultsProps) {
                       <p className="text-xs text-muted-foreground mb-2">{caseItem.description}</p>
                       <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                         <span>Location: {caseItem.location}</span>
-                        <span>Officer: {caseItem.assignedOfficer}</span>
+                        <span>Officer: {caseItem.assigned_officer?.full_name || 'Unassigned'}</span>
                         <span>Category: {caseItem.category}</span>
                       </div>
                     </div>
-                    <Link href={`/${rolePrefix}/cases/${caseItem.id}`}>
+                    <Link href={`/${rolePrefix}/cases/${caseItem.case_id}`}>
                       <Button variant="outline" size="sm">
                         <Eye className="w-4 h-4" />
                       </Button>
@@ -141,20 +120,20 @@ export function SearchResults({ rolePrefix = 'admin' }: SearchResultsProps) {
               </Card>
             ) : (
               searchUsers.map((user) => (
-                <Card key={user.id} className="p-4">
+                <Card key={user.user_id} className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-semibold">{user.name}</h3>
+                        <h3 className="font-semibold">{user.full_name}</h3>
                         <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs">
                           {getRoleLabel(user.role)}
                         </Badge>
-                        {user.active && <Badge variant="default" className="text-xs">Active</Badge>}
+                        {user.status === 'Active' && <Badge variant="default" className="text-xs">Active</Badge>}
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">{user.email}</p>
                       <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                        <span>Badge: {user.badgeNumber}</span>
-                        <span>Station: {user.station}</span>
+                        <span>Badge: {user.badge_number}</span>
+                        <span>Station: Lagos State Command</span>
                       </div>
                     </div>
                   </div>
