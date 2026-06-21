@@ -19,8 +19,10 @@ export default function AdminLayout({
   return (
     <AuthLayout requiredRole="administrator" title="Administrator">
       <div className="flex h-screen bg-background">
-        <Sidebar />
-        <main className="flex-1 overflow-auto ml-64 lg:ml-64">
+        <div className="hidden lg:block">
+          <Sidebar />
+        </div>
+        <main className="flex-1 overflow-auto lg:ml-64">
           <div className="p-6 space-y-6">
             {children}
           </div>

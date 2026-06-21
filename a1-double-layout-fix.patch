@@ -1,0 +1,79 @@
+diff --git a/app/admin/layout.tsx b/app/admin/layout.tsx
+index db42a7d..f1841aa 100644
+--- a/app/admin/layout.tsx
++++ b/app/admin/layout.tsx
+@@ -19,8 +19,10 @@ export default function AdminLayout({
+   return (
+     <AuthLayout requiredRole="administrator" title="Administrator">
+       <div className="flex h-screen bg-background">
+-        <Sidebar />
+-        <main className="flex-1 overflow-auto ml-64 lg:ml-64">
++        <div className="hidden lg:block">
++          <Sidebar />
++        </div>
++        <main className="flex-1 overflow-auto lg:ml-64">
+           <div className="p-6 space-y-6">
+             {children}
+           </div>
+diff --git a/app/officer/layout.tsx b/app/officer/layout.tsx
+index 9582c7d..b0492f4 100644
+--- a/app/officer/layout.tsx
++++ b/app/officer/layout.tsx
+@@ -19,8 +19,10 @@ export default function OfficerLayout({
+   return (
+     <AuthLayout requiredRole="officer" title="Investigating Officer">
+       <div className="flex h-screen bg-background">
+-        <Sidebar />
+-        <main className="flex-1 overflow-auto ml-64 lg:ml-64">
++        <div className="hidden lg:block">
++          <Sidebar />
++        </div>
++        <main className="flex-1 overflow-auto lg:ml-64">
+           <div className="p-6 space-y-6">
+             {children}
+           </div>
+diff --git a/app/records/layout.tsx b/app/records/layout.tsx
+index b2c0df1..b6bf379 100644
+--- a/app/records/layout.tsx
++++ b/app/records/layout.tsx
+@@ -19,8 +19,10 @@ export default function RecordsLayout({
+   return (
+     <AuthLayout requiredRole="records" title="Records Officer">
+       <div className="flex h-screen bg-background">
+-        <Sidebar />
+-        <main className="flex-1 overflow-auto ml-64 lg:ml-64">
++        <div className="hidden lg:block">
++          <Sidebar />
++        </div>
++        <main className="flex-1 overflow-auto lg:ml-64">
+           <div className="p-6 space-y-6">
+             {children}
+           </div>
+diff --git a/components/nprms/auth-layout.tsx b/components/nprms/auth-layout.tsx
+index 40cdbef..cd661cb 100644
+--- a/components/nprms/auth-layout.tsx
++++ b/components/nprms/auth-layout.tsx
+@@ -3,7 +3,6 @@
+ import { useAuth } from '@/lib/auth-context'
+ import { useRouter } from 'next/navigation'
+ import { useEffect } from 'react'
+-import { Sidebar } from './sidebar'
+ import { Spinner } from '@/components/ui/spinner'
+ 
+ interface AuthLayoutProps {
+@@ -48,14 +47,5 @@ export function AuthLayout({ children, requiredRole, title }: AuthLayoutProps) {
+     return null
+   }
+ 
+-  return (
+-    <div className="flex min-h-screen bg-background">
+-      <div className="hidden lg:block">
+-        <Sidebar />
+-      </div>
+-      <main className="flex-1 p-3 md:p-4 lg:p-5 lg:ml-64">
+-        {children}
+-      </main>
+-    </div>
+-  )
++  return <>{children}</>
+ }

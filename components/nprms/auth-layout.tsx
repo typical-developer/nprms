@@ -3,7 +3,6 @@
 import { useAuth } from '@/lib/auth-context'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { Sidebar } from './sidebar'
 import { Spinner } from '@/components/ui/spinner'
 
 interface AuthLayoutProps {
@@ -48,14 +47,5 @@ export function AuthLayout({ children, requiredRole, title }: AuthLayoutProps) {
     return null
   }
 
-  return (
-    <div className="flex min-h-screen bg-background">
-      <div className="hidden lg:block">
-        <Sidebar />
-      </div>
-      <main className="flex-1 p-3 md:p-4 lg:p-5 lg:ml-64">
-        {children}
-      </main>
-    </div>
-  )
+  return <>{children}</>
 }
