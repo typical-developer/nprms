@@ -1,24 +1,27 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
+import { useCases } from '@/lib/case-context'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { mockCases } from '@/lib/mock-data'
 import { getStatusVariant, getPriorityVariant } from '@/lib/badge-colors'
 import { formatDistanceToNow } from 'date-fns'
 import { Eye } from 'lucide-react'
 
 export function MyCases() {
   const [mounted, setMounted] = useState(false)
+  const router = useRouter()
   const { user } = useAuth()
+  const { cases } = useCases()
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  const officerCases = mockCases.filter(
+  const officerCases = cases.filter(
     (c) => c.assigned_officer?.user_id === user?.user_id
   )
 
@@ -50,7 +53,13 @@ export function MyCases() {
                 Updated {formatDistanceToNow(new Date(caseItem.date_reported), { addSuffix: true })}
               </p>
             </div>
-            <Button variant="outline" size="sm" className="ml-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="ml-2"
+              onClick={() => router.push(`/officer/cases/${caseItem.case_id}`)}
+              title={`View case ${caseItem.case_number}`}
+            >
               <Eye className="w-4 h-4" />
             </Button>
           </div>

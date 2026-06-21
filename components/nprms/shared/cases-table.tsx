@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { mockCases } from '@/lib/mock-data'
+import { useCases } from '@/lib/case-context'
 import { getStatusVariant } from '@/lib/badge-colors'
 import { formatDistanceToNow } from 'date-fns'
 import { Search, Eye } from 'lucide-react'
@@ -22,6 +22,7 @@ export function CasesTable({ rolePrefix = 'admin' }: { rolePrefix?: string }) {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [categoryFilter, setCategoryFilter] = useState<string>('')
+  const { cases } = useCases()
 
   useEffect(() => {
     setMounted(true)
@@ -34,7 +35,7 @@ export function CasesTable({ rolePrefix = 'admin' }: { rolePrefix?: string }) {
   const normalizedStatusFilter = statusFilter || 'all'
   const normalizedCategoryFilter = categoryFilter || 'all'
 
-  const filteredCases = (mockCases || []).filter((c) => {
+  const filteredCases = (cases || []).filter((c) => {
     if (!c || !search) {
       // Only check filters if no search
       const matchesStatus = normalizedStatusFilter === 'all' || c.status === statusFilter
@@ -53,8 +54,8 @@ export function CasesTable({ rolePrefix = 'admin' }: { rolePrefix?: string }) {
     return matchesSearch && matchesStatus && matchesCategory
   })
 
-  const statuses = Array.from(new Set(mockCases.map((c) => c.status)))
-  const categories = Array.from(new Set(mockCases.map((c) => c.category)))
+  const statuses = Array.from(new Set(cases.map((c) => c.status)))
+  const categories = Array.from(new Set(cases.map((c) => c.category)))
 
   return (
     <div className="space-y-4">
@@ -146,7 +147,7 @@ export function CasesTable({ rolePrefix = 'admin' }: { rolePrefix?: string }) {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Showing {filteredCases.length} of {mockCases.length} cases
+        Showing {filteredCases.length} of {cases.length} cases
       </p>
     </div>
   )

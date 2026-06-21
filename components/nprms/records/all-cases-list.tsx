@@ -9,10 +9,12 @@ import { getStatusVariant } from '@/lib/badge-colors'
 import { formatDistanceToNow } from 'date-fns'
 import { Search, Eye } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export function AllCasesList() {
   const [mounted, setMounted] = useState(false)
   const [search, setSearch] = useState('')
+  const router = useRouter()
   const { cases } = useCases()
 
   useEffect(() => {
@@ -71,7 +73,12 @@ export function AllCasesList() {
                   {caseItem.updated_at && formatDistanceToNow(new Date(caseItem.updated_at), { addSuffix: true })}
                 </td>
                 <td className="py-3 px-2 text-right">
-                  <Button variant="ghost" size="sm">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => router.push(`/records/cases/${caseItem.case_id}`)}
+                    title={`View case ${caseItem.case_number}`}
+                  >
                     <Eye className="w-4 h-4" />
                   </Button>
                 </td>
