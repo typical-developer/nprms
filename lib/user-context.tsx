@@ -14,14 +14,7 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [users, setUsers] = useState<User[]>([])
-  const [initialized, setInitialized] = useState(false)
-
-  useEffect(() => {
-    // Initialize with mock users on first mount
-    setUsers([...mockUsers])
-    setInitialized(true)
-  }, [])
+  const [users, setUsers] = useState<User[]>([...mockUsers])
 
   const addUser = (user: User) => {
     setUsers((prevUsers) => {
@@ -45,10 +38,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   const getUser = (user_id: string) => {
     return users.find((u) => u.user_id === user_id)
-  }
-
-  if (!initialized) {
-    return <>{children}</>
   }
 
   return (

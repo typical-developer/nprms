@@ -14,14 +14,7 @@ interface CaseContextType {
 const CaseContext = createContext<CaseContextType | undefined>(undefined)
 
 export function CaseProvider({ children }: { children: React.ReactNode }) {
-  const [cases, setCases] = useState<Case[]>([])
-  const [initialized, setInitialized] = useState(false)
-
-  useEffect(() => {
-    // Initialize with mock cases on first mount
-    setCases([...mockCases])
-    setInitialized(true)
-  }, [])
+  const [cases, setCases] = useState<Case[]>([...mockCases])
 
   const addCase = (caseItem: Case) => {
     setCases((prevCases) => {
@@ -45,10 +38,6 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
 
   const getCase = (case_id: string) => {
     return cases.find((c) => c.case_id === case_id)
-  }
-
-  if (!initialized) {
-    return <>{children}</>
   }
 
   return (

@@ -15,19 +15,12 @@ interface NotificationContextType {
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined)
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false)
-  const [notifications, setNotifications] = useState<Notification[]>([])
-
-  useEffect(() => {
-    // Initialize from mock data on mount
-    setNotifications(
-      mockNotifications.map((n) => ({
-        ...n,
-        is_read: false,
-      }))
-    )
-    setMounted(true)
-  }, [])
+  const [notifications, setNotifications] = useState<Notification[]>(
+    mockNotifications.map((n) => ({
+      ...n,
+      is_read: false,
+    }))
+  )
 
   const markAsRead = (notificationId: string) => {
     setNotifications((prev) =>
@@ -50,8 +43,6 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const clearAll = () => {
     setNotifications([])
   }
-
-  if (!mounted) return <>{children}</>
 
   return (
     <NotificationContext.Provider
