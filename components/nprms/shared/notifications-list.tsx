@@ -6,13 +6,14 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useNotifications } from '@/lib/notification-context'
-import { mockCases } from '@/lib/mock-data'
+import { useCases } from '@/lib/case-context'
 import { formatDistanceToNow } from 'date-fns'
 import { AlertCircle, CheckCircle2, Bell, Clock, Trash2 } from 'lucide-react'
 
 export function NotificationsList() {
   const [mounted, setMounted] = useState(false)
   const { notifications, markAsRead, markAllAsRead, deleteNotification, clearAll } = useNotifications()
+  const { cases } = useCases()
 
   useEffect(() => {
     setMounted(true)
@@ -25,7 +26,7 @@ export function NotificationsList() {
   // Map notifications with case details
   const mappedNotifications = notifications
     .map((n) => {
-      const relatedCase = mockCases.find((c) => c.case_number === n.related_case_number)
+      const relatedCase = cases.find((c) => c.case_number === n.related_case_number)
       return {
         ...n,
         case_number: n.related_case_number,

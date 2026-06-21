@@ -723,57 +723,65 @@ export const mockNotifications: Notification[] = [
 ];
 
 // Helper functions
-export function getUserById(userId: string): User | undefined {
-  return mockUsers.find(u => u.user_id === userId);
+//
+// NOTE: every helper below accepts the data it operates on as an optional
+// parameter, defaulting to the static mock arrays. CaseProvider/UserProvider
+// hold their own live React state (seeded from these same arrays), so any
+// component reading from context should pass `cases`/`users` from
+// useCases()/useUsers() explicitly rather than relying on the default —
+// otherwise these will silently ignore cases/users added or changed during
+// the session.
+export function getUserById(userId: string, users: User[] = mockUsers): User | undefined {
+  return users.find(u => u.user_id === userId);
 }
 
-export function getCaseById(caseId: string): Case | undefined {
-  return mockCases.find(c => c.case_id === caseId);
+export function getCaseById(caseId: string, cases: Case[] = mockCases): Case | undefined {
+  return cases.find(c => c.case_id === caseId);
 }
 
-export function getCasesByOfficer(officerId: string): Case[] {
-  return mockCases.filter(c => c.assigned_officer?.user_id === officerId);
+export function getCasesByOfficer(officerId: string, cases: Case[] = mockCases): Case[] {
+  return cases.filter(c => c.assigned_officer?.user_id === officerId);
 }
 
-export function getOfficerCaseCount(officerId: string): number {
-  return getCasesByOfficer(officerId).length;
+export function getOfficerCaseCount(officerId: string, cases: Case[] = mockCases): number {
+  return getCasesByOfficer(officerId, cases).length;
 }
 
-export function getOfficerResolvedCaseCount(officerId: string): number {
-  return getCasesByOfficer(officerId).filter(c => c.status === 'Resolved').length;
+export function getOfficerResolvedCaseCount(officerId: string, cases: Case[] = mockCases): number {
+  return getCasesByOfficer(officerId, cases).filter(c => c.status === 'Resolved').length;
 }
 
-export function getTotalCases(): number {
-  return mockCases.length;
+export function getTotalCases(cases: Case[] = mockCases): number {
+  return cases.length;
 }
 
-export function getActiveCases(): number {
-  return mockCases.filter(c => 
+export function getActiveCases(cases: Case[] = mockCases): number {
+  return cases.filter(c =>
     c.status !== 'Closed' && c.status !== 'Archived'
   ).length;
 }
 
-export function getClosedCases(): number {
-  return mockCases.filter(c => c.status === 'Closed').length;
+export function getClosedCases(cases: Case[] = mockCases): number {
+  return cases.filter(c => c.status === 'Closed').length;
 }
 
-export function getTotalOfficers(): number {
-  return mockUsers.filter(u => u.role === 'officer').length;
+export function getTotalOfficers(users: User[] = mockUsers): number {
+  return users.filter(u => u.role === 'officer').length;
 }
 
-export function getUnassignedCases(): Case[] {
-  return mockCases.filter(c => !c.assigned_officer);
+export function getUnassignedCases(cases: Case[] = mockCases): Case[] {
+  return cases.filter(c => !c.assigned_officer);
 }
 
-export function getCasesByStatus(status: CaseStatus): Case[] {
-  return mockCases.filter(c => c.status === status);
+export function getCasesByStatus(status: CaseStatus, cases: Case[] = mockCases): Case[] {
+  return cases.filter(c => c.status === status);
 }
 
-export function getOverdueCases(): Case[] {
+export function getOverdueCases(cases: Case[] = mockCases): Case[] {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  
-  return mockCases.filter(c => {
+
+  return cases.filter(c => {
     if (c.status !== 'Under Investigation') return false;
     const lastUpdate = new Date(c.updated_at);
     return lastUpdate < sevenDaysAgo;

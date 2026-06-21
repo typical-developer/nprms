@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { CheckCircle2, Clock, AlertCircle, FileText } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
-import { mockCases, getOverdueCases } from '@/lib/mock-data'
+import { useCases } from '@/lib/case-context'
+import { getOverdueCases } from '@/lib/mock-data'
 
 export function OfficerStatsCards() {
   const [mounted, setMounted] = useState(false)
   const { user } = useAuth()
+  const { cases } = useCases()
 
   useEffect(() => {
     setMounted(true)
@@ -18,9 +20,9 @@ export function OfficerStatsCards() {
     return null
   }
 
-  const assignedCases = mockCases.filter((c) => c.assigned_officer?.user_id === user.user_id)
+  const assignedCases = cases.filter((c) => c.assigned_officer?.user_id === user.user_id)
   const inProgressCases = assignedCases.filter((c) => c.status === 'Under Investigation')
-  const overdueCases = getOverdueCases().filter((c) => c.assigned_officer?.user_id === user.user_id)
+  const overdueCases = getOverdueCases(cases).filter((c) => c.assigned_officer?.user_id === user.user_id)
   const completedCases = assignedCases.filter((c) => c.status === 'Resolved' || c.status === 'Closed')
 
   return (

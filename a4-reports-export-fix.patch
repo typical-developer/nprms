@@ -1,0 +1,248 @@
+diff --git a/components/nprms/admin/reports-dashboard.tsx b/components/nprms/admin/reports-dashboard.tsx
+index dbb113f..ac7f5d2 100644
+--- a/components/nprms/admin/reports-dashboard.tsx
++++ b/components/nprms/admin/reports-dashboard.tsx
+@@ -1,49 +1,150 @@
+ 'use client'
+ 
+ import { Card } from '@/components/ui/card'
+-import { Badge } from '@/components/ui/badge'
+ import { Button } from '@/components/ui/button'
+ import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts'
+ import { Download, TrendingUp } from 'lucide-react'
+-import { mockCases } from '@/lib/mock-data'
++import { useCases } from '@/lib/case-context'
++import { format } from 'date-fns'
++import jsPDF from 'jspdf'
++import autoTable from 'jspdf-autotable'
+ 
+ export function ReportsDashboard() {
++  const { cases } = useCases()
++
+   // Case status distribution
+   const statusData = [
+-    { name: 'Registered', value: mockCases.filter((c) => c.status === 'Registered').length },
+-    { name: 'Under Investigation', value: mockCases.filter((c) => c.status === 'Under Investigation').length },
+-    { name: 'Resolved', value: mockCases.filter((c) => c.status === 'Resolved').length },
+-    { name: 'Closed', value: mockCases.filter((c) => c.status === 'Closed').length },
+-    { name: 'Archived', value: mockCases.filter((c) => c.status === 'Archived').length },
++    { name: 'Registered', value: cases.filter((c) => c.status === 'Registered').length },
++    { name: 'Under Investigation', value: cases.filter((c) => c.status === 'Under Investigation').length },
++    { name: 'Resolved', value: cases.filter((c) => c.status === 'Resolved').length },
++    { name: 'Closed', value: cases.filter((c) => c.status === 'Closed').length },
++    { name: 'Archived', value: cases.filter((c) => c.status === 'Archived').length },
+   ]
+ 
+   // Case category distribution
+   const categoryData = [
+-    { name: 'Theft', value: mockCases.filter((c) => c.category === 'Theft').length },
+-    { name: 'Assault', value: mockCases.filter((c) => c.category === 'Assault').length },
+-    { name: 'Fraud', value: mockCases.filter((c) => c.category === 'Fraud').length },
+-    { name: 'Armed Robbery', value: mockCases.filter((c) => c.category === 'Armed Robbery').length },
+-    { name: 'Other', value: mockCases.filter((c) => !['Theft', 'Assault', 'Fraud', 'Armed Robbery'].includes(c.category)).length },
++    { name: 'Theft', value: cases.filter((c) => c.category === 'Theft').length },
++    { name: 'Assault', value: cases.filter((c) => c.category === 'Assault').length },
++    { name: 'Fraud', value: cases.filter((c) => c.category === 'Fraud').length },
++    { name: 'Armed Robbery', value: cases.filter((c) => c.category === 'Armed Robbery').length },
++    { name: 'Other', value: cases.filter((c) => !['Theft', 'Assault', 'Fraud', 'Armed Robbery'].includes(c.category)).length },
+   ]
+ 
+-  // Monthly cases trend
+-  const monthlyData = [
+-    { month: 'Jan', cases: 2 },
+-    { month: 'Feb', cases: 3 },
+-    { month: 'Mar', cases: 2 },
+-    { month: 'Apr', cases: 4 },
+-    { month: 'May', cases: 5 },
+-    { month: 'Jun', cases: 4 },
+-  ]
++  // Monthly cases trend — computed from real date_reported values rather than hardcoded
++  const monthlyBuckets = new Map<string, number>()
++  for (const c of cases) {
++    const reportedDate = new Date(c.date_reported)
++    if (Number.isNaN(reportedDate.getTime())) continue
++    const key = `${reportedDate.getFullYear()}-${String(reportedDate.getMonth() + 1).padStart(2, '0')}`
++    monthlyBuckets.set(key, (monthlyBuckets.get(key) ?? 0) + 1)
++  }
++  const monthlyData = Array.from(monthlyBuckets.entries())
++    .sort(([a], [b]) => a.localeCompare(b))
++    .map(([key, count]) => {
++      const [year, month] = key.split('-').map(Number)
++      return { month: format(new Date(year, month - 1, 1), 'MMM yy'), cases: count }
++    })
++
++  const totalCases = cases.length
++  const resolutionRate = totalCases === 0
++    ? 0
++    : Math.round((cases.filter((c) => c.status === 'Closed' || c.status === 'Resolved').length / totalCases) * 100)
++  const activeCaseCount = cases.filter((c) => c.status === 'Under Investigation' || c.status === 'Assigned').length
+ 
+   const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6']
+ 
+   const handleExportPDF = () => {
+-    alert('PDF report exported successfully')
++    const doc = new jsPDF()
++    const generatedAt = format(new Date(), 'PPP p')
++
++    doc.setFontSize(18)
++    doc.text('NPRMS Case Report', 14, 18)
++    doc.setFontSize(10)
++    doc.setTextColor(120)
++    doc.text(`Generated ${generatedAt}`, 14, 25)
++
++    autoTable(doc, {
++      startY: 32,
++      head: [['Summary Metric', 'Value']],
++      body: [
++        ['Total Cases', String(totalCases)],
++        ['Resolution Rate', `${resolutionRate}%`],
++        ['Active Cases', String(activeCaseCount)],
++      ],
++      theme: 'striped',
++      headStyles: { fillColor: [34, 197, 94] },
++    })
++
++    autoTable(doc, {
++      startY: (doc as any).lastAutoTable.finalY + 10,
++      head: [['Status', 'Count']],
++      body: statusData.map((d) => [d.name, String(d.value)]),
++      theme: 'striped',
++      headStyles: { fillColor: [59, 130, 246] },
++    })
++
++    autoTable(doc, {
++      startY: (doc as any).lastAutoTable.finalY + 10,
++      head: [['Category', 'Count']],
++      body: categoryData.map((d) => [d.name, String(d.value)]),
++      theme: 'striped',
++      headStyles: { fillColor: [245, 158, 11] },
++    })
++
++    autoTable(doc, {
++      startY: (doc as any).lastAutoTable.finalY + 10,
++      head: [['Month', 'Cases Reported']],
++      body: monthlyData.length > 0 ? monthlyData.map((d) => [d.month, String(d.cases)]) : [['—', '0']],
++      theme: 'striped',
++      headStyles: { fillColor: [139, 92, 246] },
++    })
++
++    doc.save(`nprms-report-${format(new Date(), 'yyyy-MM-dd')}.pdf`)
++  }
++
++  const csvEscape = (value: string) => {
++    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
++      return `"${value.replace(/"/g, '""')}"`
++    }
++    return value
+   }
+ 
+   const handleExportExcel = () => {
+-    alert('Excel report exported successfully')
++    const headers = [
++      'Case Number', 'Title', 'Category', 'Priority', 'Status',
++      'Date Reported', 'Location', 'Complainant Name', 'Complainant Contact',
++      'Registered By', 'Assigned Officer', 'Created At', 'Updated At',
++    ]
++
++    const rows = cases.map((c) => [
++      c.case_number,
++      c.title,
++      c.category,
++      c.priority,
++      c.status,
++      c.date_reported,
++      c.location,
++      c.complainant_name,
++      c.complainant_contact,
++      c.registered_by?.full_name ?? '',
++      c.assigned_officer?.full_name ?? 'Unassigned',
++      c.created_at,
++      c.updated_at,
++    ])
++
++    const csvContent = [headers, ...rows]
++      .map((row) => row.map((cell) => csvEscape(String(cell ?? ''))).join(','))
++      .join('\n')
++
++    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
++    const url = URL.createObjectURL(blob)
++    const link = document.createElement('a')
++    link.href = url
++    link.download = `nprms-cases-export-${format(new Date(), 'yyyy-MM-dd')}.csv`
++    document.body.appendChild(link)
++    link.click()
++    document.body.removeChild(link)
++    URL.revokeObjectURL(url)
+   }
+ 
+   const handleEmailReport = () => {
+@@ -57,7 +158,7 @@ export function ReportsDashboard() {
+           <div className="flex items-center justify-between">
+             <div>
+               <p className="text-sm text-muted-foreground mb-1">Total Cases</p>
+-              <p className="text-3xl font-bold">{mockCases.length}</p>
++              <p className="text-3xl font-bold">{totalCases}</p>
+             </div>
+             <TrendingUp className="w-10 h-10 text-primary/20" />
+           </div>
+@@ -66,20 +167,14 @@ export function ReportsDashboard() {
+         <Card className="p-6">
+           <div>
+             <p className="text-sm text-muted-foreground mb-1">Resolution Rate</p>
+-            <p className="text-3xl font-bold">
+-              {Math.round(
+-                ((mockCases.filter((c) => c.status === 'Closed' || c.status === 'Resolved').length / mockCases.length) * 100)
+-              )}%
+-            </p>
++            <p className="text-3xl font-bold">{resolutionRate}%</p>
+           </div>
+         </Card>
+ 
+         <Card className="p-6">
+           <div>
+             <p className="text-sm text-muted-foreground mb-1">Active Cases</p>
+-            <p className="text-3xl font-bold">
+-              {mockCases.filter((c) => c.status === 'Under Investigation' || c.status === 'Assigned').length}
+-            </p>
++            <p className="text-3xl font-bold">{activeCaseCount}</p>
+           </div>
+         </Card>
+       </div>
+@@ -114,7 +209,7 @@ export function ReportsDashboard() {
+             <BarChart data={categoryData}>
+               <CartesianGrid strokeDasharray="3 3" />
+               <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
+-              <YAxis />
++              <YAxis allowDecimals={false} />
+               <Tooltip />
+               <Bar dataKey="value" fill="#22c55e" />
+             </BarChart>
+@@ -128,7 +223,7 @@ export function ReportsDashboard() {
+           <LineChart data={monthlyData}>
+             <CartesianGrid strokeDasharray="3 3" />
+             <XAxis dataKey="month" />
+-            <YAxis />
++            <YAxis allowDecimals={false} />
+             <Tooltip />
+             <Line type="monotone" dataKey="cases" stroke="#22c55e" strokeWidth={2} />
+           </LineChart>
+diff --git a/package.json b/package.json
+index 60cce49..12a35ad 100644
+--- a/package.json
++++ b/package.json
+@@ -45,6 +45,8 @@
+     "date-fns": "4.1.0",
+     "embla-carousel-react": "8.5.1",
+     "input-otp": "1.4.1",
++    "jspdf": "^4.2.1",
++    "jspdf-autotable": "^5.0.8",
+     "lucide-react": "^0.454.0",
+     "next": "16.0.10",
+     "next-themes": "^0.4.6",
+@@ -70,4 +72,4 @@
+     "tw-animate-css": "1.3.3",
+     "typescript": "^5"
+   }
+-}
+\ No newline at end of file
++}

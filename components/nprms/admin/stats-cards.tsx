@@ -1,12 +1,18 @@
+'use client'
+
 import { Card } from '@/components/ui/card'
+import { useCases } from '@/lib/case-context'
+import { useUsers } from '@/lib/user-context'
 import { getTotalCases, getActiveCases, getClosedCases, getTotalOfficers } from '@/lib/mock-data'
 import { FileText, AlertCircle, CheckCircle, Users } from 'lucide-react'
 
 export function AdminStatsCards() {
-  const totalCases = getTotalCases()
-  const activeCases = getActiveCases()
-  const closedCases = getClosedCases()
-  const totalOfficers = getTotalOfficers()
+  const { cases } = useCases()
+  const { users } = useUsers()
+  const totalCases = getTotalCases(cases)
+  const activeCases = getActiveCases(cases)
+  const closedCases = getClosedCases(cases)
+  const totalOfficers = getTotalOfficers(users)
 
   const stats = [
     {

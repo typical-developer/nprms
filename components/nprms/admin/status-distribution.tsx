@@ -2,14 +2,15 @@
 
 import { Card } from '@/components/ui/card'
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from 'recharts'
-import { getCasesByStatus, mockCases } from '@/lib/mock-data'
+import { useCases } from '@/lib/case-context'
 
 export function StatusDistributionChart() {
+  const { cases } = useCases()
   const statuses = ['Registered', 'Assigned', 'Under Investigation', 'Resolved', 'Closed', 'Archived', 'Reopened']
-  
+
   const data = statuses.map(status => ({
     name: status,
-    value: mockCases.filter(c => c.status === status).length,
+    value: cases.filter(c => c.status === status).length,
   }))
 
   const colors = ['#e5e7eb', '#3b82f6', '#f59e0b', '#10b981', '#6366f1', '#9ca3af', '#ef4444']

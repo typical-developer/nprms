@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Database, Plus, Archive, CheckCircle2 } from 'lucide-react'
-import { mockCases } from '@/lib/mock-data'
+import { useCases } from '@/lib/case-context'
 import { isThisMonth } from 'date-fns'
 
 export function RecordsStatsCards() {
   const [mounted, setMounted] = useState(false)
+  const { cases } = useCases()
 
   useEffect(() => {
     setMounted(true)
@@ -17,10 +18,10 @@ export function RecordsStatsCards() {
     return null
   }
 
-  const totalCases = mockCases.length
-  const pendingCases = mockCases.filter((c) => c.status === 'Registered' && !c.assigned_officer).length
-  const archivedCases = mockCases.filter((c) => c.status === 'Archived').length
-  const thisMonthCases = mockCases.filter((c) => isThisMonth(new Date(c.date_reported))).length
+  const totalCases = cases.length
+  const pendingCases = cases.filter((c) => c.status === 'Registered' && !c.assigned_officer).length
+  const archivedCases = cases.filter((c) => c.status === 'Archived').length
+  const thisMonthCases = cases.filter((c) => isThisMonth(new Date(c.date_reported))).length
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

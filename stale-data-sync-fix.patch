@@ -1,0 +1,366 @@
+diff --git a/app/records/archive/page.tsx b/app/records/archive/page.tsx
+index d2c7f69..f894aec 100644
+--- a/app/records/archive/page.tsx
++++ b/app/records/archive/page.tsx
+@@ -3,13 +3,14 @@
+ import { Card } from '@/components/ui/card'
+ import { Badge } from '@/components/ui/badge'
+ import { Input } from '@/components/ui/input'
+-import { mockCases } from '@/lib/mock-data'
++import { useCases } from '@/lib/case-context'
+ import { Search } from 'lucide-react'
+ import { useState, useEffect } from 'react'
+ 
+ export default function RecordsArchivePage() {
+   const [mounted, setMounted] = useState(false)
+   const [search, setSearch] = useState('')
++  const { cases } = useCases()
+ 
+   useEffect(() => {
+     setMounted(true)
+@@ -19,7 +20,7 @@ export default function RecordsArchivePage() {
+     return null
+   }
+ 
+-  const archivedCases = mockCases.filter((c) => c.status === 'Archived')
++  const archivedCases = cases.filter((c) => c.status === 'Archived')
+ 
+   const filteredCases = archivedCases.filter(
+     (c) =>
+diff --git a/components/nprms/admin/overdue-cases.tsx b/components/nprms/admin/overdue-cases.tsx
+index eb06616..2bc9bdc 100644
+--- a/components/nprms/admin/overdue-cases.tsx
++++ b/components/nprms/admin/overdue-cases.tsx
+@@ -1,11 +1,15 @@
++'use client'
++
+ import { Card } from '@/components/ui/card'
+ import { Badge } from '@/components/ui/badge'
++import { useCases } from '@/lib/case-context'
+ import { getOverdueCases } from '@/lib/mock-data'
+ import { getPriorityVariant } from '@/lib/badge-colors'
+ import { AlertTriangle } from 'lucide-react'
+ 
+ export function OverdueCases() {
+-  const overdueCases = getOverdueCases()
++  const { cases } = useCases()
++  const overdueCases = getOverdueCases(cases)
+ 
+   return (
+     <Card className="p-5 space-y-4">
+diff --git a/components/nprms/admin/stats-cards.tsx b/components/nprms/admin/stats-cards.tsx
+index 5f4e92f..23bc100 100644
+--- a/components/nprms/admin/stats-cards.tsx
++++ b/components/nprms/admin/stats-cards.tsx
+@@ -1,12 +1,18 @@
++'use client'
++
+ import { Card } from '@/components/ui/card'
++import { useCases } from '@/lib/case-context'
++import { useUsers } from '@/lib/user-context'
+ import { getTotalCases, getActiveCases, getClosedCases, getTotalOfficers } from '@/lib/mock-data'
+ import { FileText, AlertCircle, CheckCircle, Users } from 'lucide-react'
+ 
+ export function AdminStatsCards() {
+-  const totalCases = getTotalCases()
+-  const activeCases = getActiveCases()
+-  const closedCases = getClosedCases()
+-  const totalOfficers = getTotalOfficers()
++  const { cases } = useCases()
++  const { users } = useUsers()
++  const totalCases = getTotalCases(cases)
++  const activeCases = getActiveCases(cases)
++  const closedCases = getClosedCases(cases)
++  const totalOfficers = getTotalOfficers(users)
+ 
+   const stats = [
+     {
+diff --git a/components/nprms/admin/status-distribution.tsx b/components/nprms/admin/status-distribution.tsx
+index 718bd29..bfc8897 100644
+--- a/components/nprms/admin/status-distribution.tsx
++++ b/components/nprms/admin/status-distribution.tsx
+@@ -2,14 +2,15 @@
+ 
+ import { Card } from '@/components/ui/card'
+ import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from 'recharts'
+-import { getCasesByStatus, mockCases } from '@/lib/mock-data'
++import { useCases } from '@/lib/case-context'
+ 
+ export function StatusDistributionChart() {
++  const { cases } = useCases()
+   const statuses = ['Registered', 'Assigned', 'Under Investigation', 'Resolved', 'Closed', 'Archived', 'Reopened']
+-  
++
+   const data = statuses.map(status => ({
+     name: status,
+-    value: mockCases.filter(c => c.status === status).length,
++    value: cases.filter(c => c.status === status).length,
+   }))
+ 
+   const colors = ['#e5e7eb', '#3b82f6', '#f59e0b', '#10b981', '#6366f1', '#9ca3af', '#ef4444']
+diff --git a/components/nprms/officer/case-timeline.tsx b/components/nprms/officer/case-timeline.tsx
+index b7c91f5..6259ffe 100644
+--- a/components/nprms/officer/case-timeline.tsx
++++ b/components/nprms/officer/case-timeline.tsx
+@@ -2,14 +2,15 @@
+ 
+ import { useEffect, useState } from 'react'
+ import { useAuth } from '@/lib/auth-context'
++import { useCases } from '@/lib/case-context'
+ import { Card } from '@/components/ui/card'
+ import { Badge } from '@/components/ui/badge'
+-import { mockCases, mockInvestigationUpdates } from '@/lib/mock-data'
+ import { formatDistanceToNow } from 'date-fns'
+ 
+ export function CaseTimeline() {
+   const [mounted, setMounted] = useState(false)
+   const { user } = useAuth()
++  const { cases, investigationUpdates } = useCases()
+ 
+   useEffect(() => {
+     setMounted(true)
+@@ -19,13 +20,13 @@ export function CaseTimeline() {
+     return null
+   }
+ 
+-  const officerCases = mockCases.filter(
++  const officerCases = cases.filter(
+     (c) => c.assigned_officer?.user_id === user?.user_id
+   )
+ 
+   const recentUpdates = officerCases
+     .flatMap((caseItem) =>
+-      mockInvestigationUpdates
++      investigationUpdates
+         .filter((u) => u.case_id === caseItem.case_id)
+         .slice(0, 3)
+         .map((update) => ({
+diff --git a/components/nprms/officer/stats-cards.tsx b/components/nprms/officer/stats-cards.tsx
+index 30c9785..fe42ee6 100644
+--- a/components/nprms/officer/stats-cards.tsx
++++ b/components/nprms/officer/stats-cards.tsx
+@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react'
+ import { Card } from '@/components/ui/card'
+ import { CheckCircle2, Clock, AlertCircle, FileText } from 'lucide-react'
+ import { useAuth } from '@/lib/auth-context'
+-import { mockCases, getOverdueCases } from '@/lib/mock-data'
++import { useCases } from '@/lib/case-context'
++import { getOverdueCases } from '@/lib/mock-data'
+ 
+ export function OfficerStatsCards() {
+   const [mounted, setMounted] = useState(false)
+   const { user } = useAuth()
++  const { cases } = useCases()
+ 
+   useEffect(() => {
+     setMounted(true)
+@@ -18,9 +20,9 @@ export function OfficerStatsCards() {
+     return null
+   }
+ 
+-  const assignedCases = mockCases.filter((c) => c.assigned_officer?.user_id === user.user_id)
++  const assignedCases = cases.filter((c) => c.assigned_officer?.user_id === user.user_id)
+   const inProgressCases = assignedCases.filter((c) => c.status === 'Under Investigation')
+-  const overdueCases = getOverdueCases().filter((c) => c.assigned_officer?.user_id === user.user_id)
++  const overdueCases = getOverdueCases(cases).filter((c) => c.assigned_officer?.user_id === user.user_id)
+   const completedCases = assignedCases.filter((c) => c.status === 'Resolved' || c.status === 'Closed')
+ 
+   return (
+diff --git a/components/nprms/records/stats-cards.tsx b/components/nprms/records/stats-cards.tsx
+index 25506b3..b2ae958 100644
+--- a/components/nprms/records/stats-cards.tsx
++++ b/components/nprms/records/stats-cards.tsx
+@@ -3,11 +3,12 @@
+ import { useEffect, useState } from 'react'
+ import { Card } from '@/components/ui/card'
+ import { Database, Plus, Archive, CheckCircle2 } from 'lucide-react'
+-import { mockCases } from '@/lib/mock-data'
++import { useCases } from '@/lib/case-context'
+ import { isThisMonth } from 'date-fns'
+ 
+ export function RecordsStatsCards() {
+   const [mounted, setMounted] = useState(false)
++  const { cases } = useCases()
+ 
+   useEffect(() => {
+     setMounted(true)
+@@ -17,10 +18,10 @@ export function RecordsStatsCards() {
+     return null
+   }
+ 
+-  const totalCases = mockCases.length
+-  const pendingCases = mockCases.filter((c) => c.status === 'Registered' && !c.assigned_officer).length
+-  const archivedCases = mockCases.filter((c) => c.status === 'Archived').length
+-  const thisMonthCases = mockCases.filter((c) => isThisMonth(new Date(c.date_reported))).length
++  const totalCases = cases.length
++  const pendingCases = cases.filter((c) => c.status === 'Registered' && !c.assigned_officer).length
++  const archivedCases = cases.filter((c) => c.status === 'Archived').length
++  const thisMonthCases = cases.filter((c) => isThisMonth(new Date(c.date_reported))).length
+ 
+   return (
+     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+diff --git a/components/nprms/shared/notifications-list.tsx b/components/nprms/shared/notifications-list.tsx
+index 9244f4f..69d6940 100644
+--- a/components/nprms/shared/notifications-list.tsx
++++ b/components/nprms/shared/notifications-list.tsx
+@@ -6,13 +6,14 @@ import { Badge } from '@/components/ui/badge'
+ import { Button } from '@/components/ui/button'
+ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+ import { useNotifications } from '@/lib/notification-context'
+-import { mockCases } from '@/lib/mock-data'
++import { useCases } from '@/lib/case-context'
+ import { formatDistanceToNow } from 'date-fns'
+ import { AlertCircle, CheckCircle2, Bell, Clock, Trash2 } from 'lucide-react'
+ 
+ export function NotificationsList() {
+   const [mounted, setMounted] = useState(false)
+   const { notifications, markAsRead, markAllAsRead, deleteNotification, clearAll } = useNotifications()
++  const { cases } = useCases()
+ 
+   useEffect(() => {
+     setMounted(true)
+@@ -25,7 +26,7 @@ export function NotificationsList() {
+   // Map notifications with case details
+   const mappedNotifications = notifications
+     .map((n) => {
+-      const relatedCase = mockCases.find((c) => c.case_number === n.related_case_number)
++      const relatedCase = cases.find((c) => c.case_number === n.related_case_number)
+       return {
+         ...n,
+         case_number: n.related_case_number,
+diff --git a/components/nprms/shared/search-results.tsx b/components/nprms/shared/search-results.tsx
+index 29ccdee..245e3ed 100644
+--- a/components/nprms/shared/search-results.tsx
++++ b/components/nprms/shared/search-results.tsx
+@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge'
+ import { Button } from '@/components/ui/button'
+ import { Input } from '@/components/ui/input'
+ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+-import { mockCases, mockUsers } from '@/lib/mock-data'
++import { useCases } from '@/lib/case-context'
++import { useUsers } from '@/lib/user-context'
+ import { getStatusVariant, getRoleBadgeVariant } from '@/lib/badge-colors'
+ import { Search, Eye } from 'lucide-react'
+ import Link from 'next/link'
+@@ -18,6 +19,8 @@ interface SearchResultsProps {
+ export function SearchResults({ rolePrefix = 'admin' }: SearchResultsProps) {
+   const [mounted, setMounted] = useState(false)
+   const [query, setQuery] = useState('')
++  const { cases } = useCases()
++  const { users } = useUsers()
+ 
+   useEffect(() => {
+     setMounted(true)
+@@ -27,7 +30,7 @@ export function SearchResults({ rolePrefix = 'admin' }: SearchResultsProps) {
+     return null
+   }
+ 
+-  const searchCases = (mockCases || []).filter(
++  const searchCases = (cases || []).filter(
+     (c) =>
+       (c.case_number || '').toLowerCase().includes((query || '').toLowerCase()) ||
+       (c.title || '').toLowerCase().includes((query || '').toLowerCase()) ||
+@@ -35,7 +38,7 @@ export function SearchResults({ rolePrefix = 'admin' }: SearchResultsProps) {
+       (c.location || '').toLowerCase().includes((query || '').toLowerCase())
+   )
+ 
+-  const searchUsers = (mockUsers || []).filter(
++  const searchUsers = (users || []).filter(
+     (u) =>
+       (u.full_name || '').toLowerCase().includes((query || '').toLowerCase()) ||
+       (u.email || '').toLowerCase().includes((query || '').toLowerCase()) ||
+diff --git a/lib/mock-data.ts b/lib/mock-data.ts
+index 5a5ffb3..939909d 100644
+--- a/lib/mock-data.ts
++++ b/lib/mock-data.ts
+@@ -723,57 +723,65 @@ export const mockNotifications: Notification[] = [
+ ];
+ 
+ // Helper functions
+-export function getUserById(userId: string): User | undefined {
+-  return mockUsers.find(u => u.user_id === userId);
++//
++// NOTE: every helper below accepts the data it operates on as an optional
++// parameter, defaulting to the static mock arrays. CaseProvider/UserProvider
++// hold their own live React state (seeded from these same arrays), so any
++// component reading from context should pass `cases`/`users` from
++// useCases()/useUsers() explicitly rather than relying on the default —
++// otherwise these will silently ignore cases/users added or changed during
++// the session.
++export function getUserById(userId: string, users: User[] = mockUsers): User | undefined {
++  return users.find(u => u.user_id === userId);
+ }
+ 
+-export function getCaseById(caseId: string): Case | undefined {
+-  return mockCases.find(c => c.case_id === caseId);
++export function getCaseById(caseId: string, cases: Case[] = mockCases): Case | undefined {
++  return cases.find(c => c.case_id === caseId);
+ }
+ 
+-export function getCasesByOfficer(officerId: string): Case[] {
+-  return mockCases.filter(c => c.assigned_officer?.user_id === officerId);
++export function getCasesByOfficer(officerId: string, cases: Case[] = mockCases): Case[] {
++  return cases.filter(c => c.assigned_officer?.user_id === officerId);
+ }
+ 
+-export function getOfficerCaseCount(officerId: string): number {
+-  return getCasesByOfficer(officerId).length;
++export function getOfficerCaseCount(officerId: string, cases: Case[] = mockCases): number {
++  return getCasesByOfficer(officerId, cases).length;
+ }
+ 
+-export function getOfficerResolvedCaseCount(officerId: string): number {
+-  return getCasesByOfficer(officerId).filter(c => c.status === 'Resolved').length;
++export function getOfficerResolvedCaseCount(officerId: string, cases: Case[] = mockCases): number {
++  return getCasesByOfficer(officerId, cases).filter(c => c.status === 'Resolved').length;
+ }
+ 
+-export function getTotalCases(): number {
+-  return mockCases.length;
++export function getTotalCases(cases: Case[] = mockCases): number {
++  return cases.length;
+ }
+ 
+-export function getActiveCases(): number {
+-  return mockCases.filter(c => 
++export function getActiveCases(cases: Case[] = mockCases): number {
++  return cases.filter(c =>
+     c.status !== 'Closed' && c.status !== 'Archived'
+   ).length;
+ }
+ 
+-export function getClosedCases(): number {
+-  return mockCases.filter(c => c.status === 'Closed').length;
++export function getClosedCases(cases: Case[] = mockCases): number {
++  return cases.filter(c => c.status === 'Closed').length;
+ }
+ 
+-export function getTotalOfficers(): number {
+-  return mockUsers.filter(u => u.role === 'officer').length;
++export function getTotalOfficers(users: User[] = mockUsers): number {
++  return users.filter(u => u.role === 'officer').length;
+ }
+ 
+-export function getUnassignedCases(): Case[] {
+-  return mockCases.filter(c => !c.assigned_officer);
++export function getUnassignedCases(cases: Case[] = mockCases): Case[] {
++  return cases.filter(c => !c.assigned_officer);
+ }
+ 
+-export function getCasesByStatus(status: CaseStatus): Case[] {
+-  return mockCases.filter(c => c.status === status);
++export function getCasesByStatus(status: CaseStatus, cases: Case[] = mockCases): Case[] {
++  return cases.filter(c => c.status === status);
+ }
+ 
+-export function getOverdueCases(): Case[] {
++export function getOverdueCases(cases: Case[] = mockCases): Case[] {
+   const sevenDaysAgo = new Date();
+   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+-  
+-  return mockCases.filter(c => {
++
++  return cases.filter(c => {
+     if (c.status !== 'Under Investigation') return false;
+     const lastUpdate = new Date(c.updated_at);
+     return lastUpdate < sevenDaysAgo;

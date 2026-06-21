@@ -1,11 +1,15 @@
+'use client'
+
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { useCases } from '@/lib/case-context'
 import { getOverdueCases } from '@/lib/mock-data'
 import { getPriorityVariant } from '@/lib/badge-colors'
 import { AlertTriangle } from 'lucide-react'
 
 export function OverdueCases() {
-  const overdueCases = getOverdueCases()
+  const { cases } = useCases()
+  const overdueCases = getOverdueCases(cases)
 
   return (
     <Card className="p-5 space-y-4">

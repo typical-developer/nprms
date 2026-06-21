@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { mockCases, mockUsers } from '@/lib/mock-data'
+import { useCases } from '@/lib/case-context'
+import { useUsers } from '@/lib/user-context'
 import { getStatusVariant, getRoleBadgeVariant } from '@/lib/badge-colors'
 import { Search, Eye } from 'lucide-react'
 import Link from 'next/link'
@@ -18,6 +19,8 @@ interface SearchResultsProps {
 export function SearchResults({ rolePrefix = 'admin' }: SearchResultsProps) {
   const [mounted, setMounted] = useState(false)
   const [query, setQuery] = useState('')
+  const { cases } = useCases()
+  const { users } = useUsers()
 
   useEffect(() => {
     setMounted(true)
@@ -27,7 +30,7 @@ export function SearchResults({ rolePrefix = 'admin' }: SearchResultsProps) {
     return null
   }
 
-  const searchCases = (mockCases || []).filter(
+  const searchCases = (cases || []).filter(
     (c) =>
       (c.case_number || '').toLowerCase().includes((query || '').toLowerCase()) ||
       (c.title || '').toLowerCase().includes((query || '').toLowerCase()) ||
@@ -35,7 +38,7 @@ export function SearchResults({ rolePrefix = 'admin' }: SearchResultsProps) {
       (c.location || '').toLowerCase().includes((query || '').toLowerCase())
   )
 
-  const searchUsers = (mockUsers || []).filter(
+  const searchUsers = (users || []).filter(
     (u) =>
       (u.full_name || '').toLowerCase().includes((query || '').toLowerCase()) ||
       (u.email || '').toLowerCase().includes((query || '').toLowerCase()) ||

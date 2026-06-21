@@ -2,14 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
+import { useCases } from '@/lib/case-context'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { mockCases, mockInvestigationUpdates } from '@/lib/mock-data'
 import { formatDistanceToNow } from 'date-fns'
 
 export function CaseTimeline() {
   const [mounted, setMounted] = useState(false)
   const { user } = useAuth()
+  const { cases, investigationUpdates } = useCases()
 
   useEffect(() => {
     setMounted(true)
@@ -19,13 +20,13 @@ export function CaseTimeline() {
     return null
   }
 
-  const officerCases = mockCases.filter(
+  const officerCases = cases.filter(
     (c) => c.assigned_officer?.user_id === user?.user_id
   )
 
   const recentUpdates = officerCases
     .flatMap((caseItem) =>
-      mockInvestigationUpdates
+      investigationUpdates
         .filter((u) => u.case_id === caseItem.case_id)
         .slice(0, 3)
         .map((update) => ({

@@ -3,13 +3,14 @@
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { mockCases } from '@/lib/mock-data'
+import { useCases } from '@/lib/case-context'
 import { Search } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 export default function RecordsArchivePage() {
   const [mounted, setMounted] = useState(false)
   const [search, setSearch] = useState('')
+  const { cases } = useCases()
 
   useEffect(() => {
     setMounted(true)
@@ -19,7 +20,7 @@ export default function RecordsArchivePage() {
     return null
   }
 
-  const archivedCases = mockCases.filter((c) => c.status === 'Archived')
+  const archivedCases = cases.filter((c) => c.status === 'Archived')
 
   const filteredCases = archivedCases.filter(
     (c) =>
