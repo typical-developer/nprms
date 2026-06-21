@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { mockCases } from '@/lib/mock-data'
+import { getStatusVariant, getPriorityVariant } from '@/lib/badge-colors'
 import { formatDistanceToNow } from 'date-fns'
 import { Eye } from 'lucide-react'
 
@@ -23,29 +24,6 @@ export function MyCases() {
 
   if (!mounted) {
     return null
-  }
-
-  const getStatusVariant = (status: string) => {
-    const variants: Record<string, any> = {
-      'Under Investigation': 'default',
-      'Registered': 'secondary',
-      'Assigned': 'outline',
-      'Resolved': 'accent',
-      'Closed': 'info',
-      'Archived': 'secondary',
-      'Reopened': 'warning',
-    }
-    return variants[status] || 'default'
-  }
-
-  const getPriorityVariant = (priority: string) => {
-    const variants: Record<string, any> = {
-      Critical: 'destructive',
-      High: 'warning',
-      Medium: 'info',
-      Low: 'secondary',
-    }
-    return variants[priority] || 'secondary'
   }
 
   return (

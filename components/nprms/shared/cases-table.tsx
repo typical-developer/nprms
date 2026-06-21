@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { mockCases } from '@/lib/mock-data'
+import { getStatusVariant } from '@/lib/badge-colors'
 import { formatDistanceToNow } from 'date-fns'
 import { Search, Eye } from 'lucide-react'
 import Link from 'next/link'
@@ -54,19 +55,6 @@ export function CasesTable({ rolePrefix = 'admin' }: { rolePrefix?: string }) {
 
   const statuses = Array.from(new Set(mockCases.map((c) => c.status)))
   const categories = Array.from(new Set(mockCases.map((c) => c.category)))
-
-  const getStatusVariant = (status: string) => {
-    const variants: Record<string, any> = {
-      'Under Investigation': 'default',
-      'Registered': 'secondary',
-      'Assigned': 'outline',
-      'Resolved': 'accent',
-      'Closed': 'info',
-      'Archived': 'secondary',
-      'Reopened': 'warning',
-    }
-    return variants[status] || 'default'
-  }
 
   return (
     <div className="space-y-4">

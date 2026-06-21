@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { mockCases, mockUsers, mockInvestigationUpdates } from '@/lib/mock-data'
+import { getStatusVariant, getPriorityVariant } from '@/lib/badge-colors'
 import { formatDistanceToNow, format } from 'date-fns'
 import { ArrowLeft, Download, Edit2 } from 'lucide-react'
 import Link from 'next/link'
@@ -33,29 +34,6 @@ export function CaseDetailView({ caseId, rolePrefix = 'admin' }: CaseDetailViewP
   }
 
   const officer = caseItem.assigned_officer && typeof caseItem.assigned_officer === 'object' ? caseItem.assigned_officer : null
-
-  const getStatusVariant = (status: string) => {
-    const variants: Record<string, any> = {
-      'Under Investigation': 'default',
-      'Registered': 'secondary',
-      'Assigned': 'outline',
-      'Resolved': 'accent',
-      'Closed': 'info',
-      'Archived': 'secondary',
-      'Reopened': 'warning',
-    }
-    return variants[status] || 'default'
-  }
-
-  const getPriorityVariant = (priority: string) => {
-    const variants: Record<string, any> = {
-      Critical: 'destructive',
-      High: 'warning',
-      Medium: 'info',
-      Low: 'secondary',
-    }
-    return variants[priority] || 'secondary'
-  }
 
   if (!mounted) {
     return null

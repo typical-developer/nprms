@@ -1,25 +1,11 @@
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { getOverdueCases } from '@/lib/mock-data'
+import { getPriorityVariant } from '@/lib/badge-colors'
 import { AlertTriangle } from 'lucide-react'
 
 export function OverdueCases() {
   const overdueCases = getOverdueCases()
-
-  const getPriorityVariant = (priority: string) => {
-    switch (priority) {
-      case 'Critical':
-        return 'destructive'
-      case 'High':
-        return 'default'
-      case 'Medium':
-        return 'secondary'
-      case 'Low':
-        return 'outline'
-      default:
-        return 'default'
-    }
-  }
 
   return (
     <Card className="p-5 space-y-4">

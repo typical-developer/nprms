@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { mockCases } from '@/lib/mock-data'
+import { getStatusVariant } from '@/lib/badge-colors'
 import { formatDistanceToNow } from 'date-fns'
 import { Search, Eye } from 'lucide-react'
 import { useState, useEffect } from 'react'
@@ -27,19 +28,6 @@ export function AllCasesList() {
       (c.title || '').toLowerCase().includes((search || '').toLowerCase()) ||
       (c.assigned_officer?.full_name || '').toLowerCase().includes((search || '').toLowerCase())
   )
-
-  const getStatusVariant = (status: string) => {
-    const variants: Record<string, any> = {
-      'Under Investigation': 'default',
-      'Registered': 'secondary',
-      'Assigned': 'outline',
-      'Resolved': 'accent',
-      'Closed': 'info',
-      'Archived': 'secondary',
-      'Reopened': 'warning',
-    }
-    return variants[status] || 'default'
-  }
 
   return (
     <Card className="p-6">

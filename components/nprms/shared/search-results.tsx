@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { mockCases, mockUsers } from '@/lib/mock-data'
+import { getStatusVariant, getRoleBadgeVariant } from '@/lib/badge-colors'
 import { Search, Eye } from 'lucide-react'
 import Link from 'next/link'
 
@@ -40,28 +41,6 @@ export function SearchResults({ rolePrefix = 'admin' }: SearchResultsProps) {
       (u.email || '').toLowerCase().includes((query || '').toLowerCase()) ||
       (u.badge_number || '').toLowerCase().includes((query || '').toLowerCase())
   )
-
-  const getStatusVariant = (status: string) => {
-    const variants: Record<string, any> = {
-      'Under Investigation': 'default',
-      'Registered': 'secondary',
-      'Assigned': 'outline',
-      'Resolved': 'accent',
-      'Closed': 'info',
-      'Archived': 'secondary',
-      'Reopened': 'warning',
-    }
-    return variants[status] || 'default'
-  }
-
-  const getRoleBadgeVariant = (role: string) => {
-    const variants: Record<string, any> = {
-      administrator: 'default',
-      officer: 'secondary',
-      records: 'outline',
-    }
-    return variants[role] || 'secondary'
-  }
 
   const getRoleLabel = (role: string) => {
     const labels: Record<string, string> = {
