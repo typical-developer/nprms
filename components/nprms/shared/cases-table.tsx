@@ -42,7 +42,7 @@ export function CasesTable({ rolePrefix = 'admin' }: { rolePrefix?: string }) {
     }
     
     const matchesSearch =
-      (c.caseNumber || '').toLowerCase().includes((search || '').toLowerCase()) ||
+      (c.case_number || '').toLowerCase().includes((search || '').toLowerCase()) ||
       (c.title || '').toLowerCase().includes((search || '').toLowerCase()) ||
       (c.location || '').toLowerCase().includes((search || '').toLowerCase())
 
@@ -134,11 +134,7 @@ export function CasesTable({ rolePrefix = 'admin' }: { rolePrefix?: string }) {
                 <td className="py-3 px-4 text-xs">{caseItem.category}</td>
                 <td className="py-3 px-4 text-xs text-muted-foreground">{caseItem.location}</td>
                 <td className="py-3 px-4 text-xs">
-                  {typeof caseItem.assigned_officer === 'object' && caseItem.assigned_officer ? (
-                    (caseItem.assigned_officer as any).full_name
-                  ) : (
-                    caseItem.assigned_officer as string
-                  )}
+                  {caseItem.assigned_officer ? caseItem.assigned_officer.full_name : 'Unassigned'}
                 </td>
                 <td className="py-3 px-4">
                   <Badge variant={getStatusVariant(caseItem.status)} className="text-xs">

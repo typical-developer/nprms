@@ -23,9 +23,9 @@ export function AllCasesList() {
 
   const filteredCases = (mockCases || []).filter(
     (c) =>
-      (c.caseNumber || '').toLowerCase().includes((search || '').toLowerCase()) ||
+      (c.case_number || '').toLowerCase().includes((search || '').toLowerCase()) ||
       (c.title || '').toLowerCase().includes((search || '').toLowerCase()) ||
-      (c.assignedOfficer || '').toLowerCase().includes((search || '').toLowerCase())
+      (c.assigned_officer?.full_name || '').toLowerCase().includes((search || '').toLowerCase())
   )
 
   const getStatusVariant = (status: string) => {
@@ -69,17 +69,17 @@ export function AllCasesList() {
           </thead>
           <tbody>
             {filteredCases.map((caseItem) => (
-              <tr key={caseItem.id} className="border-b hover:bg-muted/50">
-                <td className="py-3 px-2 font-medium">{caseItem.caseNumber}</td>
+              <tr key={caseItem.case_id} className="border-b hover:bg-muted/50">
+                <td className="py-3 px-2 font-medium">{caseItem.case_number}</td>
                 <td className="py-3 px-2">{caseItem.title}</td>
-                <td className="py-3 px-2">{caseItem.assignedOfficer}</td>
+                <td className="py-3 px-2">{caseItem.assigned_officer?.full_name || 'Unassigned'}</td>
                 <td className="py-3 px-2">
                   <Badge variant={getStatusVariant(caseItem.status)} className="text-xs">
                     {caseItem.status}
                   </Badge>
                 </td>
                 <td className="py-3 px-2 text-xs text-muted-foreground">
-                  {caseItem.updatedAt && formatDistanceToNow(new Date(caseItem.updatedAt), { addSuffix: true })}
+                  {caseItem.updated_at && formatDistanceToNow(new Date(caseItem.updated_at), { addSuffix: true })}
                 </td>
                 <td className="py-3 px-2 text-right">
                   <Button variant="ghost" size="sm">

@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { mockCases } from '@/lib/mock-data'
+import { mockCases, mockNotifications } from '@/lib/mock-data'
 import { formatDistanceToNow, format } from 'date-fns'
 import { AlertCircle, CheckCircle2, Bell, Clock } from 'lucide-react'
 
@@ -21,17 +21,18 @@ export function NotificationsList() {
   }
 
   // Generate notifications from mock data
-  const notifications = mockCases
-    .flatMap((c) =>
-      c.notifications?.map((n) => ({
+  const notifications = mockNotifications
+    .map((n) => {
+      const relatedCase = mockCases.find((c) => c.case_number === n.related_case_number)
+      return {
         ...n,
-        caseNumber: c.caseNumber,
-        caseTitle: c.title,
-      })) || []
-    )
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        case_number: n.related_case_number,
+        caseTitle: relatedCase?.title || 'Unknown Case',
+      }
+    })
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
-  const unread = notifications.filter((n) => !n.read)
+  const unread = notifications.filter((n) => !n.is_read)
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -69,7 +70,7 @@ export function NotificationsList() {
               <Card
                 key={index}
                 className={`p-4 cursor-pointer transition-colors hover:bg-muted ${
-                  !notification.read ? 'bg-muted/50 border-primary/20' : ''
+                  !notification.is_read ? 'bg-muted/50 border-primary/20' : ''
                 }`}
               >
                 <div className="flex gap-3">
@@ -79,19 +80,19 @@ export function NotificationsList() {
                   <div className="flex-1">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className={`font-medium text-sm ${!notification.read ? 'font-semibold' : ''}`}>
+                        <p className={`font-medium text-sm ${!notification.is_read ? 'font-semibold' : ''}`}>
                           {notification.message}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Case: {notification.caseNumber}
+                          Case: {notification.case_number}
                         </p>
                       </div>
-                      {!notification.read && (
+                      {!notification.is_read && (
                         <Badge variant="default" className="text-xs">New</Badge>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-2">
-                      {formatDistanceToNow(new Date(notification.date), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                     </p>
                   </div>
                 </div>
@@ -118,13 +119,13 @@ export function NotificationsList() {
                       <div>
                         <p className="font-semibold text-sm">{notification.message}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Case: {notification.caseNumber}
+                          Case: {notification.case_number}
                         </p>
                       </div>
                       <Badge variant="default" className="text-xs">New</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-2">
-                      {formatDistanceToNow(new Date(notification.date), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                     </p>
                   </div>
                 </div>

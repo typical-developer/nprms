@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useAuth } from '@/lib/auth-context'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -10,13 +11,14 @@ import { Eye } from 'lucide-react'
 
 export function MyCases() {
   const [mounted, setMounted] = useState(false)
+  const { user } = useAuth()
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
   const officerCases = mockCases.filter(
-    (c) => c.assigned_officer === 'Ibrahim Musa'
+    (c) => c.assigned_officer?.user_id === user?.user_id
   )
 
   if (!mounted) {
