@@ -57,7 +57,9 @@ export function NPRMSHeader({ title, description, actions }: HeaderProps) {
           <Button
             variant="ghost"
             size="icon"
+            onClick={() => router.push(`/${user?.role}/notifications`)}
             className="relative hover:bg-secondary transition-all duration-300 hover:scale-110 h-8 w-8"
+            title="View notifications"
           >
             <Bell className="w-4 h-4" />
             <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-destructive rounded-full animate-pulse" />
