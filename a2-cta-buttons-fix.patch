@@ -1,0 +1,200 @@
+diff --git a/app/officer/dashboard/page.tsx b/app/officer/dashboard/page.tsx
+index 71fd7e8..15f29a6 100644
+--- a/app/officer/dashboard/page.tsx
++++ b/app/officer/dashboard/page.tsx
+@@ -5,6 +5,7 @@ import { MyCases } from '@/components/nprms/officer/my-cases'
+ import { CaseTimeline } from '@/components/nprms/officer/case-timeline'
+ import { Button } from '@/components/ui/button'
+ import { Plus } from 'lucide-react'
++import Link from 'next/link'
+ 
+ export default function OfficerDashboard() {
+   return (
+@@ -14,9 +15,11 @@ export default function OfficerDashboard() {
+           <h1 className="text-3xl font-bold">Welcome Back!</h1>
+           <p className="text-muted-foreground mt-1">Here's an overview of your assigned cases</p>
+         </div>
+-        <Button className="gap-2">
+-          <Plus className="w-4 h-4" />
+-          Update Case
++        <Button className="gap-2" asChild>
++          <Link href="/officer/cases">
++            <Plus className="w-4 h-4" />
++            Update Case
++          </Link>
+         </Button>
+       </div>
+ 
+diff --git a/app/records/dashboard/page.tsx b/app/records/dashboard/page.tsx
+index ab25743..2b3f316 100644
+--- a/app/records/dashboard/page.tsx
++++ b/app/records/dashboard/page.tsx
+@@ -4,6 +4,7 @@ import { RecordsStatsCards } from '@/components/nprms/records/stats-cards'
+ import { AllCasesList } from '@/components/nprms/records/all-cases-list'
+ import { Button } from '@/components/ui/button'
+ import { Plus } from 'lucide-react'
++import Link from 'next/link'
+ 
+ export default function RecordsDashboard() {
+   return (
+@@ -13,9 +14,11 @@ export default function RecordsDashboard() {
+           <h1 className="text-3xl font-bold">Cases Database</h1>
+           <p className="text-muted-foreground mt-1">Manage and track all registered cases</p>
+         </div>
+-        <Button className="gap-2">
+-          <Plus className="w-4 h-4" />
+-          Register New Case
++        <Button className="gap-2" asChild>
++          <Link href="/records/register">
++            <Plus className="w-4 h-4" />
++            Register New Case
++          </Link>
+         </Button>
+       </div>
+ 
+diff --git a/components/nprms/shared/case-detail.tsx b/components/nprms/shared/case-detail.tsx
+index af121a6..b8ce0a1 100644
+--- a/components/nprms/shared/case-detail.tsx
++++ b/components/nprms/shared/case-detail.tsx
+@@ -1,5 +1,6 @@
+ 'use client'
+ 
++import { useState } from 'react'
+ import { Card } from '@/components/ui/card'
+ import { Badge } from '@/components/ui/badge'
+ import { Button } from '@/components/ui/button'
+@@ -7,6 +8,8 @@ import { Input } from '@/components/ui/input'
+ import { Textarea } from '@/components/ui/textarea'
+ import { Label } from '@/components/ui/label'
+ import { getStatusVariant, getPriorityVariant, getCategoryVariant } from '@/lib/badge-colors'
++import { useAuth } from '@/lib/auth-context'
++import { useCases } from '@/lib/case-context'
+ import { format } from 'date-fns'
+ import { ArrowLeft } from 'lucide-react'
+ import Link from 'next/link'
+@@ -20,6 +23,26 @@ interface CaseDetailProps {
+ }
+ 
+ export function CaseDetail({ caseData, onBack, canEdit = false, onUpdate }: CaseDetailProps) {
++  const { user } = useAuth()
++  const { addInvestigationUpdate, getInvestigationUpdates } = useCases()
++  const [noteContent, setNoteContent] = useState('')
++
++  const updates = getInvestigationUpdates(caseData.case_id)
++
++  const handleSaveUpdate = () => {
++    if (!noteContent.trim() || !user) return
++
++    addInvestigationUpdate({
++      update_id: `u${Date.now()}`,
++      case_id: caseData.case_id,
++      officer_name: user.full_name,
++      update_type: 'Note',
++      content: noteContent.trim(),
++      created_at: new Date().toISOString(),
++    })
++
++    setNoteContent('')
++  }
+   return (
+     <div className="space-y-6">
+       {/* Header */}
+@@ -106,11 +129,17 @@ export function CaseDetail({ caseData, onBack, canEdit = false, onUpdate }: Case
+                 id="notes"
+                 placeholder="Add investigation notes here..."
+                 className="mt-2 min-h-32"
++                value={noteContent}
++                onChange={(e) => setNoteContent(e.target.value)}
+               />
+             </div>
+             <div className="flex gap-2">
+-              <Button>Save Update</Button>
+-              <Button variant="outline">Add Evidence</Button>
++              <Button onClick={handleSaveUpdate} disabled={!noteContent.trim()}>
++                Save Update
++              </Button>
++              <Button variant="outline" disabled>
++                Add Evidence
++              </Button>
+             </div>
+           </div>
+         </Card>
+@@ -120,6 +149,17 @@ export function CaseDetail({ caseData, onBack, canEdit = false, onUpdate }: Case
+       <Card className="p-6">
+         <h2 className="text-lg font-semibold mb-4">Case Timeline</h2>
+         <div className="space-y-4">
++          {updates.map((update) => (
++            <div key={update.update_id} className="flex gap-4 pb-4 border-b">
++              <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
++              <div>
++                <p className="font-medium text-sm">{update.update_type}</p>
++                <p className="text-xs text-muted-foreground">{format(new Date(update.created_at), 'PPP p')}</p>
++                <p className="text-sm mt-1">{update.content}</p>
++                <p className="text-xs text-muted-foreground mt-1">By {update.officer_name}</p>
++              </div>
++            </div>
++          ))}
+           <div className="flex gap-4 pb-4 border-b">
+             <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
+             <div>
+diff --git a/lib/case-context.tsx b/lib/case-context.tsx
+index a2126fa..fbebc44 100644
+--- a/lib/case-context.tsx
++++ b/lib/case-context.tsx
+@@ -1,7 +1,7 @@
+ 'use client'
+ 
+ import React, { createContext, useContext, useState, useEffect } from 'react'
+-import { Case, mockCases } from './mock-data'
++import { Case, InvestigationUpdate, mockCases, mockInvestigationUpdates } from './mock-data'
+ 
+ interface CaseContextType {
+   cases: Case[]
+@@ -9,12 +9,18 @@ interface CaseContextType {
+   updateCase: (case_id: string, updates: Partial<Case>) => void
+   deleteCase: (case_id: string) => void
+   getCase: (case_id: string) => Case | undefined
++  investigationUpdates: InvestigationUpdate[]
++  addInvestigationUpdate: (update: InvestigationUpdate) => void
++  getInvestigationUpdates: (case_id: string) => InvestigationUpdate[]
+ }
+ 
+ const CaseContext = createContext<CaseContextType | undefined>(undefined)
+ 
+ export function CaseProvider({ children }: { children: React.ReactNode }) {
+   const [cases, setCases] = useState<Case[]>([...mockCases])
++  const [investigationUpdates, setInvestigationUpdates] = useState<InvestigationUpdate[]>([
++    ...mockInvestigationUpdates,
++  ])
+ 
+   const addCase = (caseItem: Case) => {
+     setCases((prevCases) => {
+@@ -40,6 +46,18 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
+     return cases.find((c) => c.case_id === case_id)
+   }
+ 
++  const addInvestigationUpdate = (update: InvestigationUpdate) => {
++    setInvestigationUpdates((prevUpdates) => [update, ...prevUpdates])
++    // Keep the case's updated_at in sync with the new diary entry
++    updateCase(update.case_id, { updated_at: update.created_at })
++  }
++
++  const getInvestigationUpdates = (case_id: string) => {
++    return investigationUpdates
++      .filter((u) => u.case_id === case_id)
++      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
++  }
++
+   return (
+     <CaseContext.Provider
+       value={{
+@@ -48,6 +66,9 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
+         updateCase,
+         deleteCase,
+         getCase,
++        investigationUpdates,
++        addInvestigationUpdate,
++        getInvestigationUpdates,
+       }}
+     >
+       {children}

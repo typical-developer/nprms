@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -7,6 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { getStatusVariant, getPriorityVariant, getCategoryVariant } from '@/lib/badge-colors'
+import { useAuth } from '@/lib/auth-context'
+import { useCases } from '@/lib/case-context'
 import { format } from 'date-fns'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
@@ -20,6 +23,26 @@ interface CaseDetailProps {
 }
 
 export function CaseDetail({ caseData, onBack, canEdit = false, onUpdate }: CaseDetailProps) {
+  const { user } = useAuth()
+  const { addInvestigationUpdate, getInvestigationUpdates } = useCases()
+  const [noteContent, setNoteContent] = useState('')
+
+  const updates = getInvestigationUpdates(caseData.case_id)
+
+  const handleSaveUpdate = () => {
+    if (!noteContent.trim() || !user) return
+
+    addInvestigationUpdate({
+      update_id: `u${Date.now()}`,
+      case_id: caseData.case_id,
+      officer_name: user.full_name,
+      update_type: 'Note',
+      content: noteContent.trim(),
+      created_at: new Date().toISOString(),
+    })
+
+    setNoteContent('')
+  }
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -106,11 +129,17 @@ export function CaseDetail({ caseData, onBack, canEdit = false, onUpdate }: Case
                 id="notes"
                 placeholder="Add investigation notes here..."
                 className="mt-2 min-h-32"
+                value={noteContent}
+                onChange={(e) => setNoteContent(e.target.value)}
               />
             </div>
             <div className="flex gap-2">
-              <Button>Save Update</Button>
-              <Button variant="outline">Add Evidence</Button>
+              <Button onClick={handleSaveUpdate} disabled={!noteContent.trim()}>
+                Save Update
+              </Button>
+              <Button variant="outline" disabled>
+                Add Evidence
+              </Button>
             </div>
           </div>
         </Card>
@@ -120,6 +149,17 @@ export function CaseDetail({ caseData, onBack, canEdit = false, onUpdate }: Case
       <Card className="p-6">
         <h2 className="text-lg font-semibold mb-4">Case Timeline</h2>
         <div className="space-y-4">
+          {updates.map((update) => (
+            <div key={update.update_id} className="flex gap-4 pb-4 border-b">
+              <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-sm">{update.update_type}</p>
+                <p className="text-xs text-muted-foreground">{format(new Date(update.created_at), 'PPP p')}</p>
+                <p className="text-sm mt-1">{update.content}</p>
+                <p className="text-xs text-muted-foreground mt-1">By {update.officer_name}</p>
+              </div>
+            </div>
+          ))}
           <div className="flex gap-4 pb-4 border-b">
             <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
             <div>

@@ -5,6 +5,7 @@ import { MyCases } from '@/components/nprms/officer/my-cases'
 import { CaseTimeline } from '@/components/nprms/officer/case-timeline'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
+import Link from 'next/link'
 
 export default function OfficerDashboard() {
   return (
@@ -14,9 +15,11 @@ export default function OfficerDashboard() {
           <h1 className="text-3xl font-bold">Welcome Back!</h1>
           <p className="text-muted-foreground mt-1">Here's an overview of your assigned cases</p>
         </div>
-        <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          Update Case
+        <Button className="gap-2" asChild>
+          <Link href="/officer/cases">
+            <Plus className="w-4 h-4" />
+            Update Case
+          </Link>
         </Button>
       </div>
 
