@@ -1,0 +1,139 @@
+diff --git a/app/admin/layout.tsx b/app/admin/layout.tsx
+index f1841aa..8a3ccea 100644
+--- a/app/admin/layout.tsx
++++ b/app/admin/layout.tsx
+@@ -2,6 +2,7 @@
+ 
+ import { AuthLayout } from '@/components/nprms/auth-layout'
+ import { Sidebar } from '@/components/nprms/sidebar'
++import { MobileNav } from '@/components/nprms/mobile-nav'
+ import { useAuth } from '@/lib/auth-context'
+ import React from 'react'
+ 
+@@ -22,7 +23,8 @@ export default function AdminLayout({
+         <div className="hidden lg:block">
+           <Sidebar />
+         </div>
+-        <main className="flex-1 overflow-auto lg:ml-64">
++        <main className="flex-1 overflow-auto lg:ml-64 flex flex-col">
++          <MobileNav />
+           <div className="p-6 space-y-6">
+             {children}
+           </div>
+diff --git a/app/officer/layout.tsx b/app/officer/layout.tsx
+index b0492f4..a0c79e1 100644
+--- a/app/officer/layout.tsx
++++ b/app/officer/layout.tsx
+@@ -2,6 +2,7 @@
+ 
+ import { AuthLayout } from '@/components/nprms/auth-layout'
+ import { Sidebar } from '@/components/nprms/sidebar'
++import { MobileNav } from '@/components/nprms/mobile-nav'
+ import { useAuth } from '@/lib/auth-context'
+ import React from 'react'
+ 
+@@ -22,7 +23,8 @@ export default function OfficerLayout({
+         <div className="hidden lg:block">
+           <Sidebar />
+         </div>
+-        <main className="flex-1 overflow-auto lg:ml-64">
++        <main className="flex-1 overflow-auto lg:ml-64 flex flex-col">
++          <MobileNav />
+           <div className="p-6 space-y-6">
+             {children}
+           </div>
+diff --git a/app/records/layout.tsx b/app/records/layout.tsx
+index b6bf379..c6f4992 100644
+--- a/app/records/layout.tsx
++++ b/app/records/layout.tsx
+@@ -2,6 +2,7 @@
+ 
+ import { AuthLayout } from '@/components/nprms/auth-layout'
+ import { Sidebar } from '@/components/nprms/sidebar'
++import { MobileNav } from '@/components/nprms/mobile-nav'
+ import { useAuth } from '@/lib/auth-context'
+ import React from 'react'
+ 
+@@ -22,7 +23,8 @@ export default function RecordsLayout({
+         <div className="hidden lg:block">
+           <Sidebar />
+         </div>
+-        <main className="flex-1 overflow-auto lg:ml-64">
++        <main className="flex-1 overflow-auto lg:ml-64 flex flex-col">
++          <MobileNav />
+           <div className="p-6 space-y-6">
+             {children}
+           </div>
+diff --git a/components/nprms/mobile-nav.tsx b/components/nprms/mobile-nav.tsx
+new file mode 100644
+index 0000000..241c6cf
+--- /dev/null
++++ b/components/nprms/mobile-nav.tsx
+@@ -0,0 +1,34 @@
++'use client'
++
++import { useState } from 'react'
++import { Menu } from 'lucide-react'
++import { Button } from '@/components/ui/button'
++import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
++import { Sidebar } from './sidebar'
++
++export function MobileNav() {
++  const [open, setOpen] = useState(false)
++
++  return (
++    <div className="lg:hidden flex items-center border-b border-border bg-card px-3 py-2.5 sticky top-0 z-40">
++      <Sheet open={open} onOpenChange={setOpen}>
++        <Button
++          variant="ghost"
++          size="icon"
++          className="h-9 w-9"
++          onClick={() => setOpen(true)}
++          aria-label="Open navigation menu"
++        >
++          <Menu className="w-5 h-5" />
++        </Button>
++        <SheetContent side="left" className="w-64 p-0 sm:max-w-64">
++          <SheetTitle className="sr-only">Navigation menu</SheetTitle>
++          <div onClick={() => setOpen(false)}>
++            <Sidebar inSheet />
++          </div>
++        </SheetContent>
++      </Sheet>
++      <span className="ml-2 text-sm font-semibold text-foreground">NPRMS</span>
++    </div>
++  )
++}
+diff --git a/components/nprms/sidebar.tsx b/components/nprms/sidebar.tsx
+index 6d54f39..a0a12d9 100644
+--- a/components/nprms/sidebar.tsx
++++ b/components/nprms/sidebar.tsx
+@@ -72,7 +72,11 @@ function getMenuItemsForRole(role: Role): { menu: MenuItem[], general: MenuItem[
+   }
+ }
+ 
+-export function Sidebar() {
++interface SidebarProps {
++  inSheet?: boolean
++}
++
++export function Sidebar({ inSheet = false }: SidebarProps) {
+   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
+   const pathname = usePathname()
+   const router = useRouter()
+@@ -88,7 +92,14 @@ export function Sidebar() {
+   }
+ 
+   return (
+-    <aside className="fixed top-0 left-0 w-64 bg-card border-r border-border p-4 h-screen overflow-y-auto lg:block">
++    <aside
++      className={cn(
++        'bg-card p-4 overflow-y-auto',
++        inSheet
++          ? 'w-full h-full'
++          : 'fixed top-0 left-0 w-64 border-r border-border h-screen lg:block',
++      )}
++    >
+       {/* Logo/Header */}
+       <div className="flex items-center gap-2 mb-6 group cursor-pointer">
+         <Link href={user.role === 'administrator' ? '/admin/dashboard' : user.role === 'officer' ? '/officer/dashboard' : '/records/dashboard'} className="flex items-center gap-2">

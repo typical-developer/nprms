@@ -72,7 +72,11 @@ function getMenuItemsForRole(role: Role): { menu: MenuItem[], general: MenuItem[
   }
 }
 
-export function Sidebar() {
+interface SidebarProps {
+  inSheet?: boolean
+}
+
+export function Sidebar({ inSheet = false }: SidebarProps) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
   const pathname = usePathname()
   const router = useRouter()
@@ -88,7 +92,14 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="fixed top-0 left-0 w-64 bg-card border-r border-border p-4 h-screen overflow-y-auto lg:block">
+    <aside
+      className={cn(
+        'bg-card p-4 overflow-y-auto',
+        inSheet
+          ? 'w-full h-full'
+          : 'fixed top-0 left-0 w-64 border-r border-border h-screen lg:block',
+      )}
+    >
       {/* Logo/Header */}
       <div className="flex items-center gap-2 mb-6 group cursor-pointer">
         <Link href={user.role === 'administrator' ? '/admin/dashboard' : user.role === 'officer' ? '/officer/dashboard' : '/records/dashboard'} className="flex items-center gap-2">
