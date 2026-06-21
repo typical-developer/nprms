@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { AuthLayout } from '@/components/nprms/auth-layout'
 import { UsersTable } from '@/components/nprms/admin/users-table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -29,8 +28,7 @@ export default function UsersPage() {
   }
 
   return (
-    <AuthLayout title="Users" requiredRole="administrator">
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">User Management</h1>
@@ -101,6 +99,5 @@ export default function UsersPage() {
 
         <UsersTable />
       </div>
-    </AuthLayout>
   )
 }

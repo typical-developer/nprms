@@ -1,6 +1,5 @@
 'use client'
 
-import { AuthLayout } from '@/components/nprms/auth-layout'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -41,8 +40,7 @@ export default function RecordsArchivePage() {
   }
 
   return (
-    <AuthLayout title="Archive" requiredRole="records">
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Case Archive</h1>
           <p className="text-muted-foreground mt-1">View archived cases ({filteredCases.length} total)</p>
@@ -97,6 +95,5 @@ export default function RecordsArchivePage() {
           </div>
         </Card>
       </div>
-    </AuthLayout>
   )
 }
