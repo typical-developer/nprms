@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
-import { mockUsers } from '@/lib/mock-data'
+import { useUsers } from '@/lib/user-context'
 import { Edit2, Trash2, Shield, Search } from 'lucide-react'
 
 export function UsersTable() {
@@ -13,6 +13,8 @@ export function UsersTable() {
   const [search, setSearch] = useState('')
   const [editingUser, setEditingUser] = useState<string | null>(null)
   const [deletingUser, setDeletingUser] = useState<string | null>(null)
+  const [editFormData, setEditFormData] = useState({ full_name: '', email: '', badge_number: '' })
+  const { users, updateUser, deleteUser } = useUsers()
 
   useEffect(() => {
     setMounted(true)
@@ -22,12 +24,38 @@ export function UsersTable() {
     return null
   }
 
-  const filteredUsers = (mockUsers || []).filter(
+  const filteredUsers = (users || []).filter(
     (u) =>
       (u.full_name || '').toLowerCase().includes((search || '').toLowerCase()) ||
       (u.email || '').toLowerCase().includes((search || '').toLowerCase()) ||
       (u.role || '').toLowerCase().includes((search || '').toLowerCase())
   )
+
+  const handleEditClick = (user_id: string) => {
+    const user = users.find((u) => u.user_id === user_id)
+    if (user) {
+      setEditFormData({
+        full_name: user.full_name,
+        email: user.email,
+        badge_number: user.badge_number,
+      })
+    }
+    setEditingUser(user_id)
+  }
+
+  const handleSaveEdit = () => {
+    if (editingUser) {
+      updateUser(editingUser, editFormData)
+      setEditingUser(null)
+    }
+  }
+
+  const handleDeleteUser = () => {
+    if (deletingUser) {
+      deleteUser(deletingUser)
+      setDeletingUser(null)
+    }
+  }
 
   const getRoleBadgeVariant = (role: string) => {
     const variants: Record<string, any> = {
@@ -93,7 +121,7 @@ export function UsersTable() {
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    onClick={() => setEditingUser(user.user_id)}
+                    onClick={() => handleEditClick(user.user_id)}
                     title={`Edit ${user.full_name}`}
                   >
                     <Edit2 className="w-4 h-4" />
@@ -115,7 +143,7 @@ export function UsersTable() {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Showing {filteredUsers.length} of {mockUsers.length} users
+        Showing {filteredUsers.length} of {users.length} users
       </p>
 
       {editingUser && (
@@ -126,15 +154,36 @@ export function UsersTable() {
                 <h2 className="text-lg font-bold">Edit User</h2>
                 <p className="text-sm text-muted-foreground">User: {filteredUsers.find(u => u.user_id === editingUser)?.full_name}</p>
               </div>
-              <div className="space-y-3 text-sm">
-                <p>Edit functionality would be implemented in a production app with form fields for updating user details.</p>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Full Name</label>
+                  <Input
+                    value={editFormData.full_name}
+                    onChange={(e) => setEditFormData({ ...editFormData, full_name: e.target.value })}
+                    placeholder="Enter full name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Email</label>
+                  <Input
+                    value={editFormData.email}
+                    onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                    placeholder="Enter email"
+                    type="email"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Badge Number</label>
+                  <Input
+                    value={editFormData.badge_number}
+                    onChange={(e) => setEditFormData({ ...editFormData, badge_number: e.target.value })}
+                    placeholder="Enter badge number"
+                  />
+                </div>
               </div>
               <div className="flex gap-2 justify-end">
                 <Button variant="outline" onClick={() => setEditingUser(null)}>Cancel</Button>
-                <Button onClick={() => {
-                  setEditingUser(null)
-                  alert('User updated successfully')
-                }}>Save Changes</Button>
+                <Button onClick={handleSaveEdit}>Save Changes</Button>
               </div>
             </div>
           </Card>
@@ -154,10 +203,7 @@ export function UsersTable() {
               </div>
               <div className="flex gap-2 justify-end">
                 <Button variant="outline" onClick={() => setDeletingUser(null)}>Cancel</Button>
-                <Button variant="destructive" onClick={() => {
-                  setDeletingUser(null)
-                  alert('User deleted successfully')
-                }}>Delete</Button>
+                <Button variant="destructive" onClick={handleDeleteUser}>Delete</Button>
               </div>
             </div>
           </Card>
