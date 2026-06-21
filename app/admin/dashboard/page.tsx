@@ -1,7 +1,6 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { AuthLayout } from '@/components/nprms/auth-layout'
 import { NPRMSHeader } from '@/components/nprms/header'
 import { AdminStatsCards } from '@/components/nprms/admin/stats-cards'
 import { StatusDistributionChart } from '@/components/nprms/admin/status-distribution'
@@ -12,7 +11,7 @@ import Link from 'next/link'
 
 export default function AdminDashboardPage() {
   return (
-    <AuthLayout requiredRole="administrator">
+    <>
       <NPRMSHeader
         title="Administrator Dashboard"
         description="Overview of all cases, officers, and system activity"
@@ -64,6 +63,6 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </div>
-    </AuthLayout>
+    </>
   )
 }
