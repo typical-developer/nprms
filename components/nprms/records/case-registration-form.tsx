@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { useAuth } from '@/lib/auth-context'
+import { useCases } from '@/lib/case-context'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,6 +15,7 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import type { Case, CaseCategory, Priority } from '@/lib/mock-data'
 
 const categories = [
   'Theft',
@@ -27,6 +30,8 @@ const categories = [
 const priorities = ['Low', 'Medium', 'High', 'Critical']
 
 export function CaseRegistrationForm() {
+  const { user } = useAuth()
+  const { addCase } = useCases()
   const [formData, setFormData] = useState({
     caseNumber: '',
     title: '',
@@ -36,14 +41,70 @@ export function CaseRegistrationForm() {
     priority: 'Medium',
     complainantName: '',
     complainantPhone: '',
+    complainantAddress: '',
     suspectName: '',
     witnesses: '',
   })
+  const [submitted, setSubmitted] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Case registered:', formData)
-    alert('Case registered successfully! Case #' + formData.caseNumber)
+    
+    if (!user) return
+
+    // Create new case object
+    const newCase: Case = {
+      case_id: `case-${Date.now()}`,
+      case_number: formData.caseNumber,
+      title: formData.title,
+      description: formData.description,
+      category: formData.category as CaseCategory,
+      priority: formData.priority as Priority,
+      status: 'Registered',
+      date_reported: new Date().toISOString(),
+      location: formData.location,
+      complainant_name: formData.complainantName,
+      complainant_contact: formData.complainantPhone,
+      complainant_address: formData.complainantAddress,
+      registered_by: user,
+      assigned_officer: null,
+      assigned_by: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    addCase(newCase)
+    setSubmitted(true)
+
+    // Reset form after 2 seconds
+    setTimeout(() => {
+      setFormData({
+        caseNumber: '',
+        title: '',
+        category: '',
+        description: '',
+        location: '',
+        priority: 'Medium',
+        complainantName: '',
+        complainantPhone: '',
+        complainantAddress: '',
+        suspectName: '',
+        witnesses: '',
+      })
+      setSubmitted(false)
+    }, 2000)
+  }
+
+  if (submitted) {
+    return (
+      <Card className="p-6 bg-green-50 border-green-200">
+        <div className="space-y-3">
+          <h3 className="text-xl font-bold text-green-700">Case Registered Successfully!</h3>
+          <p className="text-green-600">Case #{formData.caseNumber} has been added to the system.</p>
+          <p className="text-sm text-green-600">You will be redirected shortly...</p>
+        </div>
+      </Card>
+    )
   }
 
   return (
@@ -152,6 +213,16 @@ export function CaseRegistrationForm() {
               onChange={(e) => setFormData({ ...formData, complainantPhone: e.target.value })}
             />
           </div>
+        </div>
+
+        <div>
+          <Label htmlFor="complainantAddress">Complainant Address</Label>
+          <Input
+            id="complainantAddress"
+            placeholder="Full address"
+            value={formData.complainantAddress}
+            onChange={(e) => setFormData({ ...formData, complainantAddress: e.target.value })}
+          />
         </div>
 
         <div>

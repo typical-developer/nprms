@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { mockCases } from '@/lib/mock-data'
+import { useCases } from '@/lib/case-context'
 import { getStatusVariant } from '@/lib/badge-colors'
 import { formatDistanceToNow } from 'date-fns'
 import { Search, Eye } from 'lucide-react'
@@ -13,6 +13,7 @@ import { useState, useEffect } from 'react'
 export function AllCasesList() {
   const [mounted, setMounted] = useState(false)
   const [search, setSearch] = useState('')
+  const { cases } = useCases()
 
   useEffect(() => {
     setMounted(true)
@@ -22,7 +23,7 @@ export function AllCasesList() {
     return null
   }
 
-  const filteredCases = (mockCases || []).filter(
+  const filteredCases = (cases || []).filter(
     (c) =>
       (c.case_number || '').toLowerCase().includes((search || '').toLowerCase()) ||
       (c.title || '').toLowerCase().includes((search || '').toLowerCase()) ||
@@ -81,7 +82,7 @@ export function AllCasesList() {
       </div>
 
       <p className="text-xs text-muted-foreground mt-4">
-        Showing {filteredCases.length} of {mockCases.length} cases
+        Showing {filteredCases.length} of {cases.length} cases
       </p>
     </Card>
   )
