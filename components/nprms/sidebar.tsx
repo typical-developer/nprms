@@ -16,9 +16,9 @@ interface MenuItem {
 }
 
 function getMenuItemsForRole(role: Role): { menu: MenuItem[], general: MenuItem[] } {
-  const baseGeneral: MenuItem[] = [
-    { icon: Settings, label: 'Settings', href: '/settings' },
-    { icon: HelpCircle, label: 'Help', href: '/help' },
+  const getBaseGeneral = (rolePrefix: string): MenuItem[] => [
+    { icon: Settings, label: 'Settings', href: `/${rolePrefix}/settings` },
+    { icon: HelpCircle, label: 'Help', href: `/${rolePrefix}/help` },
     { icon: LogOut, label: 'Logout', href: '/logout' },
   ]
 
@@ -30,12 +30,12 @@ function getMenuItemsForRole(role: Role): { menu: MenuItem[], general: MenuItem[
           { icon: FileText, label: 'All Cases', href: '/admin/cases' },
           { icon: Users, label: 'Users', href: '/admin/users' },
           { icon: BarChart3, label: 'Reports', href: '/admin/reports' },
-          { icon: Search, label: 'Search', href: '/search' },
-          { icon: Bell, label: 'Notifications', href: '/notifications' },
+          { icon: Search, label: 'Search', href: '/admin/search' },
+          { icon: Bell, label: 'Notifications', href: '/admin/notifications' },
         ],
         general: [
-          { icon: Settings, label: 'Profile', href: '/profile' },
-          ...baseGeneral,
+          { icon: Settings, label: 'Profile', href: '/admin/profile' },
+          ...getBaseGeneral('admin'),
         ],
       }
     case 'officer':
@@ -43,31 +43,31 @@ function getMenuItemsForRole(role: Role): { menu: MenuItem[], general: MenuItem[
         menu: [
           { icon: LayoutDashboard, label: 'Dashboard', href: '/officer/dashboard' },
           { icon: FileText, label: 'My Cases', href: '/officer/cases' },
-          { icon: Search, label: 'Search', href: '/search' },
-          { icon: Bell, label: 'Notifications', href: '/notifications' },
+          { icon: Search, label: 'Search', href: '/officer/search' },
+          { icon: Bell, label: 'Notifications', href: '/officer/notifications' },
         ],
         general: [
-          { icon: Settings, label: 'Profile', href: '/profile' },
-          ...baseGeneral,
+          { icon: Settings, label: 'Profile', href: '/officer/profile' },
+          ...getBaseGeneral('officer'),
         ],
       }
     case 'records':
       return {
         menu: [
           { icon: LayoutDashboard, label: 'Dashboard', href: '/records/dashboard' },
-          { icon: FileText, label: 'Register Case', href: '/records/cases/new' },
+          { icon: FileText, label: 'Register Case', href: '/records/register' },
           { icon: FileText, label: 'All Cases', href: '/records/cases' },
           { icon: BarChart3, label: 'Archive', href: '/records/archive' },
-          { icon: Search, label: 'Search', href: '/search' },
-          { icon: Bell, label: 'Notifications', href: '/notifications' },
+          { icon: Search, label: 'Search', href: '/records/search' },
+          { icon: Bell, label: 'Notifications', href: '/records/notifications' },
         ],
         general: [
-          { icon: Settings, label: 'Profile', href: '/profile' },
-          ...baseGeneral,
+          { icon: Settings, label: 'Profile', href: '/records/profile' },
+          ...getBaseGeneral('records'),
         ],
       }
     default:
-      return { menu: [], general: baseGeneral }
+      return { menu: [], general: getBaseGeneral('') }
   }
 }
 

@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { useAuth } from '@/lib/auth-context'
-import Link from 'next/link'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -103,16 +102,6 @@ export default function LoginPage() {
                 className="h-10 bg-card border-border"
                 required
               />
-            </div>
-
-            {/* Forgot Password Link */}
-            <div className="flex justify-end">
-              <Link
-                href="/forgot-password"
-                className="text-xs text-primary hover:text-primary/90 transition-colors"
-              >
-                Forgot password?
-              </Link>
             </div>
 
             {/* Submit Button */}

@@ -103,7 +103,7 @@ export function NPRMSHeader({ title, description, actions }: HeaderProps) {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/profile">View Profile</Link>
+                  <Link href={`/${user?.role}/profile`}>View Profile</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout} className="text-destructive">
                   Logout
