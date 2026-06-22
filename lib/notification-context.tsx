@@ -6,6 +6,7 @@ import type { Notification } from '@/lib/mock-data'
 
 interface NotificationContextType {
   notifications: Notification[]
+  addNotification: (notification: Omit<Notification, 'notification_id' | 'is_read' | 'created_at'>) => void
   markAsRead: (notificationId: string) => void
   markAllAsRead: () => void
   deleteNotification: (notificationId: string) => void
@@ -21,6 +22,18 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       is_read: false,
     }))
   )
+
+  const addNotification = (notification: Omit<Notification, 'notification_id' | 'is_read' | 'created_at'>) => {
+    setNotifications((prev) => [
+      {
+        ...notification,
+        notification_id: `n${Date.now()}`,
+        is_read: false,
+        created_at: new Date().toISOString(),
+      },
+      ...prev,
+    ])
+  }
 
   const markAsRead = (notificationId: string) => {
     setNotifications((prev) =>
@@ -46,7 +59,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   return (
     <NotificationContext.Provider
-      value={{ notifications, markAsRead, markAllAsRead, deleteNotification, clearAll }}
+      value={{ notifications, addNotification, markAsRead, markAllAsRead, deleteNotification, clearAll }}
     >
       {children}
     </NotificationContext.Provider>

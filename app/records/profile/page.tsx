@@ -8,7 +8,7 @@ import { NPRMSHeader } from '@/components/nprms/header'
 
 export default function RecordsProfilePage() {
   const [mounted, setMounted] = useState(false)
-  const { user } = useAuth()
+  const { user, updateUser: updateAuthUser } = useAuth()
   const { updateUser } = useUsers()
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function RecordsProfilePage() {
       <UserProfile
         user={user}
         canEdit={true}
-        onUpdate={(updates) => updateUser(user.user_id, updates)}
+        onUpdate={(updates) => { updateUser(user.user_id, updates); updateAuthUser(updates) }}
       />
     </div>
   )

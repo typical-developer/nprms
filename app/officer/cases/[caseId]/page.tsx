@@ -11,7 +11,7 @@ export default function CaseDetailPage() {
   const router = useRouter()
   const params = useParams()
   const { user } = useAuth()
-  const { cases } = useCases()
+  const { cases, updateCase } = useCases()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -46,6 +46,7 @@ export default function CaseDetailPage() {
         caseData={caseItem}
         onBack={() => router.back()}
         canEdit={isAssignedToUser}
+        onUpdate={(updates) => updateCase(caseItem.case_id, updates)}
       />
     </div>
   )

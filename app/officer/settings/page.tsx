@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { NPRMSHeader } from '@/components/nprms/header'
+import { useSettings } from '@/lib/settings-context'
 import {
   Select,
   SelectContent,
@@ -15,16 +16,19 @@ import {
 } from '@/components/ui/select'
 
 export default function OfficerSettingsPage() {
-  const [notificationEmail, setNotificationEmail] = useState(true)
-  const [notificationPush, setNotificationPush] = useState(true)
-  const [theme, setTheme] = useState('light')
-  const [language, setLanguage] = useState('english')
+  const { settings, updateSettings } = useSettings()
+  const { notificationEmail, notificationPush, theme, language } = settings
   const [saved, setSaved] = useState(false)
 
   const handleSave = () => {
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
   }
+
+  const setNotificationEmail = (v: boolean) => updateSettings({ notificationEmail: v })
+  const setNotificationPush = (v: boolean) => updateSettings({ notificationPush: v })
+  const setTheme = (v: string) => updateSettings({ theme: v })
+  const setLanguage = (v: string) => updateSettings({ language: v })
 
   return (
     <div className="space-y-6 max-w-2xl">

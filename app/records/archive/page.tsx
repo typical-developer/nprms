@@ -2,15 +2,20 @@
 
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useCases } from '@/lib/case-context'
-import { Search } from 'lucide-react'
+import { Search, RotateCcw } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 export default function RecordsArchivePage() {
   const [mounted, setMounted] = useState(false)
   const [search, setSearch] = useState('')
-  const { cases } = useCases()
+  const { cases, updateCase } = useCases()
+
+  const handleReopen = (caseId: string) => {
+    updateCase(caseId, { status: 'Reopened', archived_at: null, updated_at: new Date().toISOString() })
+  }
 
   useEffect(() => {
     setMounted(true)
@@ -68,6 +73,7 @@ export default function RecordsArchivePage() {
                   <th className="py-3 px-4 text-left font-medium">Title</th>
                   <th className="py-3 px-4 text-left font-medium">Status</th>
                   <th className="py-3 px-4 text-left font-medium">Category</th>
+                  <th className="py-3 px-4 text-left font-medium">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -82,11 +88,16 @@ export default function RecordsArchivePage() {
                         </Badge>
                       </td>
                       <td className="py-3 px-4 text-xs text-muted-foreground">{caseItem.category}</td>
+                      <td className="py-3 px-4">
+                        <Button size="sm" variant="outline" onClick={() => handleReopen(caseItem.case_id)}>
+                          <RotateCcw className="w-3 h-3 mr-1" /> Reopen
+                        </Button>
+                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={4} className="py-8 px-4 text-center text-muted-foreground">
+                    <td colSpan={5} className="py-8 px-4 text-center text-muted-foreground">
                       No archived cases found
                     </td>
                   </tr>

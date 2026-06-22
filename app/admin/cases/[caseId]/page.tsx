@@ -73,13 +73,22 @@ export default function CaseDetailPage() {
         canEdit={false}
       />
 
-      {/* Admin Assignment Section */}
-      {caseItem.status === 'Registered' && (
+      {/* Admin Assignment / Reassignment Section */}
+      {(caseItem.status === 'Registered' || caseItem.assigned_officer) && !['Closed', 'Archived', 'Resolved'].includes(caseItem.status) && (
         <Card className="p-6 border-primary/20 bg-primary/5">
-          <h2 className="text-lg font-semibold mb-4">Assign Case to Officer</h2>
+          <h2 className="text-lg font-semibold mb-1">
+            {caseItem.status === 'Registered' ? 'Assign Case to Officer' : 'Reassign Case'}
+          </h2>
+          {caseItem.assigned_officer && caseItem.status !== 'Registered' && (
+            <p className="text-sm text-muted-foreground mb-4">
+              Currently assigned to <span className="font-medium">{caseItem.assigned_officer.full_name}</span>
+            </p>
+          )}
           <div className="space-y-4">
             <div>
-              <Label htmlFor="officer">Select Officer</Label>
+              <Label htmlFor="officer">
+                {caseItem.status === 'Registered' ? 'Select Officer' : 'Select New Officer'}
+              </Label>
               <Select value={assignedOfficerId} onValueChange={setAssignedOfficerId}>
                 <SelectTrigger id="officer" className="mt-2">
                   <SelectValue placeholder="Choose an investigating officer" />
@@ -94,7 +103,7 @@ export default function CaseDetailPage() {
               </Select>
             </div>
             <Button onClick={handleAssignCase} disabled={!assignedOfficerId}>
-              Assign Case
+              {caseItem.status === 'Registered' ? 'Assign Case' : 'Reassign Case'}
             </Button>
           </div>
         </Card>

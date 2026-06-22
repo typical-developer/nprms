@@ -57,7 +57,7 @@ export function NPRMSHeader({ title, description, actions }: HeaderProps) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push(`/${user?.role}/notifications`)}
+            onClick={() => router.push(`/${user?.role === 'administrator' ? 'admin' : user?.role}/notifications`)}
             className="relative hover:bg-secondary transition-all duration-300 hover:scale-110 h-8 w-8"
             title="View notifications"
           >
@@ -105,7 +105,7 @@ export function NPRMSHeader({ title, description, actions }: HeaderProps) {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href={`/${user?.role}/profile`}>View Profile</Link>
+                  <Link href={`/${user?.role === 'administrator' ? 'admin' : user?.role}/profile`}>View Profile</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout} className="text-destructive">
                   Logout

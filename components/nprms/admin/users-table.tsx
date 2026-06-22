@@ -6,15 +6,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { useUsers } from '@/lib/user-context'
-import { Edit2, Trash2, Shield, Search } from 'lucide-react'
+import { Edit2, UserX, UserCheck, Shield, Search } from 'lucide-react'
 
 export function UsersTable() {
   const [mounted, setMounted] = useState(false)
   const [search, setSearch] = useState('')
   const [editingUser, setEditingUser] = useState<string | null>(null)
-  const [deletingUser, setDeletingUser] = useState<string | null>(null)
+  const [togglingUser, setTogglingUser] = useState<string | null>(null)
   const [editFormData, setEditFormData] = useState({ full_name: '', email: '', badge_number: '' })
-  const { users, updateUser, deleteUser } = useUsers()
+  const { users, updateUser } = useUsers()
 
   useEffect(() => {
     setMounted(true)
@@ -50,10 +50,13 @@ export function UsersTable() {
     }
   }
 
-  const handleDeleteUser = () => {
-    if (deletingUser) {
-      deleteUser(deletingUser)
-      setDeletingUser(null)
+  const handleToggleStatus = () => {
+    if (togglingUser) {
+      const target = users.find((u) => u.user_id === togglingUser)
+      if (target) {
+        updateUser(togglingUser, { status: target.status === 'Active' ? 'Inactive' : 'Active' })
+      }
+      setTogglingUser(null)
     }
   }
 
@@ -118,22 +121,22 @@ export function UsersTable() {
                   </Badge>
                 </td>
                 <td className="py-3 px-4 text-right flex gap-1 justify-end">
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="sm"
                     onClick={() => handleEditClick(user.user_id)}
                     title={`Edit ${user.full_name}`}
                   >
                     <Edit2 className="w-4 h-4" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-destructive"
-                    onClick={() => setDeletingUser(user.user_id)}
-                    title={`Delete ${user.full_name}`}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={user.status === 'Active' ? 'text-destructive' : 'text-green-600'}
+                    onClick={() => setTogglingUser(user.user_id)}
+                    title={user.status === 'Active' ? `Deactivate ${user.full_name}` : `Reactivate ${user.full_name}`}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    {user.status === 'Active' ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
                   </Button>
                 </td>
               </tr>
@@ -190,25 +193,36 @@ export function UsersTable() {
         </div>
       )}
 
-      {deletingUser && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md">
-            <div className="p-6 space-y-4">
-              <div>
-                <h2 className="text-lg font-bold">Delete User</h2>
-                <p className="text-sm text-muted-foreground">Are you sure you want to delete this user?</p>
+      {togglingUser && (() => {
+        const target = users.find((u) => u.user_id === togglingUser)
+        const isActive = target?.status === 'Active'
+        return (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <Card className="w-full max-w-md">
+              <div className="p-6 space-y-4">
+                <div>
+                  <h2 className="text-lg font-bold">{isActive ? 'Deactivate' : 'Reactivate'} User</h2>
+                  <p className="text-sm text-muted-foreground">
+                    {isActive
+                      ? 'This user will lose access to NPRMS. Their case history is preserved.'
+                      : 'This user will regain access to NPRMS.'}
+                  </p>
+                </div>
+                <div className="bg-muted border rounded p-3 text-sm">
+                  <p className="font-medium">{target?.full_name}</p>
+                  <p className="text-xs text-muted-foreground">{target?.badge_number} · {target?.role}</p>
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button variant="outline" onClick={() => setTogglingUser(null)}>Cancel</Button>
+                  <Button variant={isActive ? 'destructive' : 'default'} onClick={handleToggleStatus}>
+                    {isActive ? 'Deactivate' : 'Reactivate'}
+                  </Button>
+                </div>
               </div>
-              <div className="bg-destructive/10 border border-destructive/30 rounded p-3 text-sm">
-                <p className="font-medium">User: {filteredUsers.find(u => u.user_id === deletingUser)?.full_name}</p>
-              </div>
-              <div className="flex gap-2 justify-end">
-                <Button variant="outline" onClick={() => setDeletingUser(null)}>Cancel</Button>
-                <Button variant="destructive" onClick={handleDeleteUser}>Delete</Button>
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
+            </Card>
+          </div>
+        )
+      })()}
     </div>
   )
 }

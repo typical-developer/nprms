@@ -7,6 +7,7 @@ import { AuthProvider } from "@/lib/auth-context"
 import { UserProvider } from "@/lib/user-context"
 import { CaseProvider } from "@/lib/case-context"
 import { NotificationProvider } from "@/lib/notification-context"
+import { SettingsProvider } from "@/lib/settings-context"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -47,9 +48,11 @@ export default function RootLayout({
           <UserProvider>
             <CaseProvider>
               <NotificationProvider>
-                <ThemeProvider defaultTheme="light" storageKey="nprms-theme">
-                  {children}
-                </ThemeProvider>
+                <SettingsProvider>
+                  <ThemeProvider defaultTheme="light" storageKey="nprms-theme">
+                    {children}
+                  </ThemeProvider>
+                </SettingsProvider>
               </NotificationProvider>
             </CaseProvider>
           </UserProvider>

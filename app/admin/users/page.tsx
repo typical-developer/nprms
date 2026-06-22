@@ -7,23 +7,36 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Plus } from 'lucide-react'
+import { useUsers } from '@/lib/user-context'
+import type { Role } from '@/lib/mock-data'
 
 export default function UsersPage() {
+  const { addUser, users } = useUsers()
   const [showAddUser, setShowAddUser] = useState(false)
-  const [newUser, setNewUser] = useState({
-    name: '',
-    email: '',
-    badgeNumber: '',
-    role: 'officer',
-  })
+  const [newUser, setNewUser] = useState({ name: '', email: '', badgeNumber: '', role: 'officer' })
+  const [error, setError] = useState('')
 
   const handleAddUser = () => {
-    if (!newUser.name || !newUser.email || !newUser.badgeNumber) {
-      alert('Please fill in all required fields')
+    if (!newUser.name.trim() || !newUser.email.trim() || !newUser.badgeNumber.trim()) {
+      setError('Please fill in all required fields')
       return
     }
-    alert(`User "${newUser.name}" added successfully`)
+    if (users.some((u) => u.badge_number === newUser.badgeNumber.trim())) {
+      setError('Badge number already exists')
+      return
+    }
+    addUser({
+      user_id: `u${Date.now()}`,
+      full_name: newUser.name.trim(),
+      email: newUser.email.trim(),
+      badge_number: newUser.badgeNumber.trim(),
+      role: newUser.role as Role,
+      phone: '',
+      status: 'Active',
+      last_login: new Date().toISOString(),
+    })
     setNewUser({ name: '', email: '', badgeNumber: '', role: 'officer' })
+    setError('')
     setShowAddUser(false)
   }
 
@@ -88,8 +101,9 @@ export default function UsersPage() {
                     </Select>
                   </div>
                 </div>
+                {error && <p className="text-sm text-destructive">{error}</p>}
                 <div className="flex gap-2 justify-end">
-                  <Button variant="outline" onClick={() => setShowAddUser(false)}>Cancel</Button>
+                  <Button variant="outline" onClick={() => { setShowAddUser(false); setError('') }}>Cancel</Button>
                   <Button onClick={handleAddUser}>Create User</Button>
                 </div>
               </div>
