@@ -5,6 +5,7 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
+    "dev:all": "node scripts/dev-all.mjs",
     "lint": "eslint .",
     "start": "next start"
   },

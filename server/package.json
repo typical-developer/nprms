@@ -1,0 +1,24 @@
+{
+  "name": "nprms-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "NPRMS backend — Express + MySQL REST API with a free (Groq) AI layer",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "db:init": "node db/init.js",
+    "db:seed": "node db/seed.js",
+    "db:reset": "node db/init.js && node db/seed.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^12.11.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.11.0"
+  }
+}

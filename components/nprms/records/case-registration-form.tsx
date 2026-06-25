@@ -15,6 +15,8 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { Sparkles, Loader2 } from 'lucide-react'
+import { aiClient } from '@/lib/ai'
 import type { Case, CaseCategory, Priority } from '@/lib/mock-data'
 
 const categories = [
@@ -46,6 +48,34 @@ export function CaseRegistrationForm() {
     witnesses: '',
   })
   const [submitted, setSubmitted] = useState(false)
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiNote, setAiNote] = useState('')
+
+  const handleAiSuggest = async () => {
+    if (!formData.description.trim() && !formData.title.trim()) {
+      setAiNote('Enter a title or description first, then let AI classify it.')
+      return
+    }
+    setAiLoading(true)
+    setAiNote('')
+    try {
+      const r = await aiClient.categorize(formData.title, formData.description)
+      setFormData((prev) => ({
+        ...prev,
+        category: r.category,
+        priority: r.priority,
+        title: prev.title.trim() ? prev.title : (r.suggestedTitle || prev.title),
+      }))
+      setAiNote(
+        `${r.source === 'groq' ? 'AI' : 'Auto'} classified as ${r.category} · ${r.priority} priority` +
+        (r.rationale ? ` — ${r.rationale}` : '')
+      )
+    } catch (e) {
+      setAiNote(e instanceof Error ? e.message : 'AI suggestion failed')
+    } finally {
+      setAiLoading(false)
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -109,7 +139,20 @@ export function CaseRegistrationForm() {
 
   return (
     <Card className="p-6">
-      <h2 className="text-2xl font-bold mb-6">Register New Case</h2>
+      <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
+        <h2 className="text-2xl font-bold">Register New Case</h2>
+        <Button type="button" variant="outline" className="gap-2" onClick={handleAiSuggest} disabled={aiLoading}>
+          {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+          {aiLoading ? 'Classifying…' : 'AI Auto-fill category & priority'}
+        </Button>
+      </div>
+
+      {aiNote && (
+        <div className="mb-4 p-3 rounded-lg bg-primary/5 border border-primary/20 text-sm text-foreground flex items-start gap-2">
+          <Sparkles className="w-4 h-4 mt-0.5 text-primary flex-shrink-0" />
+          <span>{aiNote}</span>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

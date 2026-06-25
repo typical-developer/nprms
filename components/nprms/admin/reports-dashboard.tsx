@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts'
 import { Download, TrendingUp } from 'lucide-react'
 import { useCases } from '@/lib/case-context'
+import { AiInsights } from '@/components/nprms/admin/ai-insights'
 import { format } from 'date-fns'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -153,6 +154,8 @@ export function ReportsDashboard() {
 
   return (
     <div className="space-y-6">
+      <AiInsights />
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-6">
           <div className="flex items-center justify-between">

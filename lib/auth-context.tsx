@@ -1,7 +1,8 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { User, mockUsers, Role } from './mock-data'
+import { User } from './mock-data'
+import { api, setToken, getToken, sync } from './api'
 
 interface AuthContextType {
   user: User | null
@@ -14,13 +15,15 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+const USER_KEY = 'nprms-user'
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Initialize from localStorage on mount
+  // Restore session from localStorage, then validate the token against the API.
   useEffect(() => {
-    const storedUser = localStorage.getItem('nprms-user')
+    const storedUser = localStorage.getItem(USER_KEY)
     if (storedUser) {
       try {
         setUser(JSON.parse(storedUser))
@@ -28,37 +31,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('Failed to parse stored user:', e)
       }
     }
-    setLoading(false)
+
+    const token = getToken()
+    if (token) {
+      api
+        .get<User>('/auth/me')
+        .then((fresh) => {
+          setUser(fresh)
+          localStorage.setItem(USER_KEY, JSON.stringify(fresh))
+        })
+        .catch(() => {
+          // Token invalid/expired or server down — clear if it was rejected.
+          setUser(null)
+          setToken(null)
+          localStorage.removeItem(USER_KEY)
+        })
+        .finally(() => setLoading(false))
+    } else {
+      setLoading(false)
+    }
   }, [])
 
   const login = async (email: string, password: string) => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    // Mock authentication - find user by email
-    const foundUser = mockUsers.find(u => u.email === email)
-    
-    if (!foundUser) {
-      throw new Error('Invalid email or password')
-    }
-
-    // For demo purposes, accept any password
-    setUser(foundUser)
-    localStorage.setItem('nprms-user', JSON.stringify(foundUser))
+    const { token, user: loggedIn } = await api.post<{ token: string; user: User }>('/auth/login', {
+      email,
+      password,
+    })
+    setToken(token)
+    setUser(loggedIn)
+    localStorage.setItem(USER_KEY, JSON.stringify(loggedIn))
   }
 
   const logout = () => {
     setUser(null)
-    localStorage.removeItem('nprms-user')
+    setToken(null)
+    localStorage.removeItem(USER_KEY)
   }
 
   const updateUser = (updates: Partial<User>) => {
     setUser((prev) => {
       if (!prev) return prev
       const next = { ...prev, ...updates }
-      localStorage.setItem('nprms-user', JSON.stringify(next))
+      localStorage.setItem(USER_KEY, JSON.stringify(next))
       return next
     })
+    sync(api.patch('/users/me', updates), 'update own profile')
   }
 
   return (

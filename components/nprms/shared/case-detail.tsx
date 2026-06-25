@@ -16,6 +16,7 @@ import { format } from 'date-fns'
 import { ArrowLeft, FileText, Image, Video, Music, Paperclip, Plus, ChevronDown, ChevronUp, UserX, User } from 'lucide-react'
 import Link from 'next/link'
 import type { Case, Evidence, Suspect, Witness, SuspectStatus } from '@/lib/mock-data'
+import { AiCaseAssistant } from './ai-case-assistant'
 
 interface CaseDetailProps {
   caseData: Case
@@ -229,6 +230,9 @@ export function CaseDetail({ caseData, onBack, canEdit = false, onUpdate }: Case
         <h2 className="text-lg font-semibold mb-4">Case Description</h2>
         <p className="text-sm text-muted-foreground whitespace-pre-wrap">{caseData.description}</p>
       </Card>
+
+      {/* AI Investigation Assistant */}
+      <AiCaseAssistant caseId={caseData.case_id} caseNumber={caseData.case_number} />
 
       {/* Complainant Information */}
       <Card className="p-6">

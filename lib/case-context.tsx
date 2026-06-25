@@ -5,6 +5,8 @@ import {
   Case, InvestigationUpdate, Evidence, Suspect, Witness,
   mockCases, mockInvestigationUpdates, mockEvidence, mockSuspects, mockWitnesses,
 } from './mock-data'
+import { api, getToken, sync } from './api'
+import { useAuth } from './auth-context'
 
 interface CaseContextType {
   cases: Case[]
@@ -25,6 +27,7 @@ interface CaseContextType {
   witnesses: Witness[]
   addWitness: (witness: Witness) => void
   getWitnesses: (case_id: string) => Witness[]
+  refresh: () => void
 }
 
 const CaseContext = createContext<CaseContextType | undefined>(undefined)
@@ -37,72 +40,89 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
   const [evidence, setEvidence] = useState<Evidence[]>([...mockEvidence])
   const [suspects, setSuspects] = useState<Suspect[]>([...mockSuspects])
   const [witnesses, setWitnesses] = useState<Witness[]>([...mockWitnesses])
+  const { user } = useAuth()
 
-  const addCase = (caseItem: Case) => {
-    setCases((prevCases) => {
-      // Check if case already exists
-      if (prevCases.some((c) => c.case_id === caseItem.case_id)) {
-        return prevCases
-      }
-      return [...prevCases, caseItem]
-    })
+  const refresh = () => {
+    if (!getToken()) return
+    api.get<Case[]>('/cases').then(setCases).catch(() => {})
+    api.get<InvestigationUpdate[]>('/investigation-updates').then(setInvestigationUpdates).catch(() => {})
+    api.get<Evidence[]>('/evidence').then(setEvidence).catch(() => {})
+    api.get<Suspect[]>('/suspects').then(setSuspects).catch(() => {})
+    api.get<Witness[]>('/witnesses').then(setWitnesses).catch(() => {})
   }
 
-  const updateCase = (case_id: string, updates: Partial<Case>) => {
-    setCases((prevCases) =>
-      prevCases.map((c) => (c.case_id === case_id ? { ...c, ...updates } : c))
+  useEffect(() => {
+    refresh()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.user_id])
+
+  const addCase = (caseItem: Case) => {
+    setCases((prev) => (prev.some((c) => c.case_id === caseItem.case_id) ? prev : [caseItem, ...prev]))
+    sync(
+      api.post<Case>('/cases', caseItem).then((saved) =>
+        setCases((prev) => prev.map((c) => (c.case_id === caseItem.case_id ? saved : c)))
+      ),
+      'create case'
     )
   }
 
-  const deleteCase = (case_id: string) => {
-    setCases((prevCases) => prevCases.filter((c) => c.case_id !== case_id))
+  const updateCase = (case_id: string, updates: Partial<Case>) => {
+    setCases((prev) => prev.map((c) => (c.case_id === case_id ? { ...c, ...updates } : c)))
+    sync(api.patch(`/cases/${case_id}`, updates), 'update case')
   }
 
-  const getCase = (case_id: string) => {
-    return cases.find((c) => c.case_id === case_id)
+  const deleteCase = (case_id: string) => {
+    setCases((prev) => prev.filter((c) => c.case_id !== case_id))
+    sync(api.del(`/cases/${case_id}`), 'delete case')
   }
+
+  const getCase = (case_id: string) => cases.find((c) => c.case_id === case_id)
+
+  // Bump a case's updated_at locally only; the server does the same when the
+  // child record is persisted, so no separate PATCH is needed.
+  const touchCaseLocal = (case_id: string, updated_at: string) =>
+    setCases((prev) => prev.map((c) => (c.case_id === case_id ? { ...c, updated_at } : c)))
 
   const addInvestigationUpdate = (update: InvestigationUpdate) => {
-    setInvestigationUpdates((prevUpdates) => [update, ...prevUpdates])
-    // Keep the case's updated_at in sync with the new diary entry
-    updateCase(update.case_id, { updated_at: update.created_at })
+    setInvestigationUpdates((prev) => [update, ...prev])
+    touchCaseLocal(update.case_id, update.created_at)
+    sync(api.post('/investigation-updates', update), 'add investigation update')
   }
 
-  const getInvestigationUpdates = (case_id: string) => {
-    return investigationUpdates
+  const getInvestigationUpdates = (case_id: string) =>
+    investigationUpdates
       .filter((u) => u.case_id === case_id)
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-  }
 
   const addEvidence = (item: Evidence) => {
     setEvidence((prev) => [item, ...prev])
-    updateCase(item.case_id, { updated_at: item.uploaded_at })
+    touchCaseLocal(item.case_id, item.uploaded_at)
+    sync(api.post('/evidence', item), 'add evidence')
   }
 
-  const getEvidence = (case_id: string) => {
-    return evidence.filter((e) => e.case_id === case_id)
+  const getEvidence = (case_id: string) =>
+    evidence
+      .filter((e) => e.case_id === case_id)
       .sort((a, b) => new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime())
-  }
 
   const addSuspect = (suspect: Suspect) => {
     setSuspects((prev) => [suspect, ...prev])
+    sync(api.post('/suspects', suspect), 'add suspect')
   }
 
   const updateSuspectStatus = (suspect_id: string, status: Suspect['status']) => {
-    setSuspects((prev) => prev.map((s) => s.suspect_id === suspect_id ? { ...s, status } : s))
+    setSuspects((prev) => prev.map((s) => (s.suspect_id === suspect_id ? { ...s, status } : s)))
+    sync(api.patch(`/suspects/${suspect_id}`, { status }), 'update suspect status')
   }
 
-  const getSuspects = (case_id: string) => {
-    return suspects.filter((s) => s.case_id === case_id)
-  }
+  const getSuspects = (case_id: string) => suspects.filter((s) => s.case_id === case_id)
 
   const addWitness = (witness: Witness) => {
     setWitnesses((prev) => [witness, ...prev])
+    sync(api.post('/witnesses', witness), 'add witness')
   }
 
-  const getWitnesses = (case_id: string) => {
-    return witnesses.filter((w) => w.case_id === case_id)
-  }
+  const getWitnesses = (case_id: string) => witnesses.filter((w) => w.case_id === case_id)
 
   return (
     <CaseContext.Provider
@@ -125,6 +145,7 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
         witnesses,
         addWitness,
         getWitnesses,
+        refresh,
       }}
     >
       {children}
